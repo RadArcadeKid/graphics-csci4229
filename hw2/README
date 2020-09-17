@@ -1,0 +1,15 @@
+HW2: Lorenz Attractor
+by
+Jake Henson - 105963531
+CSCI 4229/5229, Fall 2020
+
+** Compile and run **
+As per usual with make files, prototypes:
+- Type 'make' to build
+- Type './lorenz' to run
+
+** How to use **
+  [More goes here when u figure out what ur doin]
+  0 = Reset viewport to default
+  arrow keys = change the angle of the view
+  ESC = Exit the program
