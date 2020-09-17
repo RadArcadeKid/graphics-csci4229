@@ -270,3 +270,5 @@ int main(int argc,char* argv[])
    //  Return code
    return 0;
 }
+
+// Note - this code was based on the example code we were given in class for ex6 as a launchpoint

@@ -3,16 +3,19 @@ by
 Jake Henson - 105963531
 CSCI 4229/5229, Fall 2020
 
+** Time Taken **
+It took me roughly 7-8 hours of work on this assignment
+
 ** Compile and run **
-As per usual with make files, prototypes:
+As per usual with make files:
 - Type 'make' to build; 'make clean' to remove build
 - Type './lorenz' to run
 
 ** Key Bindings **
-  d = Decrease Lorenz s parameter
-  s = Increase Lorenz s parameter
-  r = Decrease Lorenz r parameter
-  t = Increase Lorenz r parameter
+  d = Decrease Lorenz s (sigma) parameter
+  s = Increase Lorenz s  (sigma) parameter
+  r = Decrease Lorenz r (rho) parameter
+  t = Increase Lorenz r (rho) parameter
   1 = Decrease the scale
   2 = Increase the scale
   0 = Reset viewport to default
