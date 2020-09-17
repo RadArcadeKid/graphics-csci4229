@@ -5,11 +5,16 @@ CSCI 4229/5229, Fall 2020
 
 ** Compile and run **
 As per usual with make files, prototypes:
-- Type 'make' to build
+- Type 'make' to build; 'make clean' to remove build
 - Type './lorenz' to run
 
-** How to use **
-  [More goes here when u figure out what ur doin]
+** Key Bindings **
+  d = Decrease Lorenz s parameter
+  s = Increase Lorenz s parameter
+  r = Decrease Lorenz r parameter
+  t = Increase Lorenz r parameter
+  1 = Decrease the scale
+  2 = Increase the scale
   0 = Reset viewport to default
   arrow keys = change the angle of the view
   ESC = Exit the program

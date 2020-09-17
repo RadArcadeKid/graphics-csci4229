@@ -30,9 +30,3 @@ Before submitting, please consider the following checklist:
     Make sure that the program behaves correctly when the window is resized;
     The program should start with something interesting to see - don't make me work to see something worth while;
     Make sure the README tells me what buttons to press to make something happen.
-
-
-TODO:
-- Play with ex6 + ex7
-- Create a Makefile to get the thing to compile
-- Don't be scared, you got this

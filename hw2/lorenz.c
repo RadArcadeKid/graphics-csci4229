@@ -1,28 +1,23 @@
 /*
- * Simple program to demonstrate generating coordinates
- * using the Lorenz Attractor
- *
- * Modified to work using OpenGL by Jake Henson
+ * Lorenz Attractor Program
+ * For fun and for science! (Mostly fun)
+ * Modified Lorenz.c to work using OpenGL by Jake Henson - 105963531
  * University of Colorado Boulder, Fall 2020
- */
+ *
+ * ~~ Key bindings ~~
+ * d = Decrease Lorenz s parameter
+ * s = Increase Lorenz s parameter
+ * r = Decrease Lorenz r parameter
+ * t = Increase Lorenz r parameter
+ * 1 = Decrease the scale
+ * 2 = Increase the scale
+ * 0 = Reset viewport to default
+ * arrow keys = change the angle of the view
+ * ESC = Exit the program
+*/
 
-///////////////////////////////////////////////
-/*
- *  Coordinates
- *
- *  Display 2, 3 and 4 dimensional coordinates in 3D.
- *
- *  Key bindings:
- *  1      2D coordinates
- *  2      2D coordinates with fixed Z value
- *  3      3D coordinates
- *  4      4D coordinates
- *  +/-    Increase/decrease z or w
- *  arrows Change view angle
- *  0      Reset view angle
- *  ESC    Exit
- */
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
 #include <stdarg.h>
 //  OpenGL with prototypes for glext
@@ -34,20 +29,17 @@
 #endif
 
 //  Globals
-int th=0;       // Azimuth of view angle
-int ph=0;       // Elevation of view angle
-// double z=0;     // Z variable
-// double w=1;     // W variable
-//double dim=2;   // Dimension of orthogonal box
-const char* text[] = {"","2D","3D constant Z","3D","4D"};  // Dimension display text
-//TODO: Add more fun text here for variables
+int th=25;       // Azimuth of view angle
+int ph=20;       // Elevation of view angle
 
 // Lorenz Global Parameters
 double s  = 10;
 double b  = 2.6666;
 double r  = 28;
 double scale = .05;
-//TODO: make it so you can play with these
+double rcolor = 1.000; //for changing color depending on r parameter
+double scolor = 1.000; //for changing color depending on s parameter
+
 
 /*
  *  Convenience routine to output raster text
@@ -73,6 +65,18 @@ void Print(const char* format , ...)
  */
 void display()
 {
+  //reset colors if needed so they don't go out of bounds
+  if(rcolor <= 0)
+     rcolor = 0.005;
+  else if(rcolor >= 1)
+     rcolor = 1.000;
+
+  if(scolor <= 0)
+     scolor = 0.005;
+  else if(scolor >= 1)
+     scolor = 1.000;
+
+
    //  Clear the image
    glClear(GL_COLOR_BUFFER_BIT);
    //  Reset previous transforms
@@ -81,6 +85,7 @@ void display()
    glRotated(ph,1,0,0);
    glRotated(th,0,1,0);
 
+   //Salvaged from the original lorenz.c file, the main driver
    int i;
     /*  Coordinates  */
    double x = 1;
@@ -89,7 +94,6 @@ void display()
    /*  Time step  */
    double dt = 0.001;
 
-   //TODO: add fun colours
    glColor3f(0,1,1);
    glBegin(GL_LINE_STRIP);
       /*
@@ -105,7 +109,14 @@ void display()
          y += (dt*dy);
          z += (dt*dz);
 
-         glVertex4f(x*scale,y*scale,z*scale, 1);
+         //adjust colors depending on i, s, and r values! How fun!
+         if(i <= 1000  || i >= 30000)
+             glColor3f(0,scolor,rcolor);
+         else
+             glColor3f(1,abs(scolor-1),rcolor);
+
+         //create a vertex point using the given scale!
+         glVertex3f(x*scale,y*scale,z*scale);
       }
    glEnd();
 
@@ -128,7 +139,8 @@ void display()
    glRasterPos3d(0,0,len);
    Print("Z");
    glWindowPos2i(5,5);
-   Print("View Angle=%d,%d  %s",th,ph);
+   //Display scale, s and r parameters
+   Print("scale=%0.1f        s=%0.1f  r=%0.f",(100 * scale),s,r);
    glFlush();
    glutSwapBuffers();
 }
@@ -138,6 +150,10 @@ void display()
  */
 void key(unsigned char ch,int x,int y)
 {
+  //check for scale so it doesn't invert itself
+   if(scale <= 0.005)
+      scale = 0.005;
+
    //  Exit on ESC
    if (ch == 27)
       exit(0);
@@ -145,12 +161,36 @@ void key(unsigned char ch,int x,int y)
    else if (ch == '0')
       th = ph = 0;
 
-  //TODO: more key functions to control stuff
-   else if (ch == 'q')
-      w += 0.01;
+   // change s parameter
+   else if(ch == 'd'){
+      scolor += 0.05;
+      s += 0.2;
+   }
 
-   else if (ch == 'q')
-      w -= 0.01;
+   else if(ch == 's'){
+     scolor -= 0.05;
+      s -= 0.2;
+   }
+
+  // change r parameter
+   else if(ch == 'r'){
+     rcolor += 0.05;
+     r -= 1;
+   }
+
+   else if(ch == 't'){
+     rcolor -= 0.05;
+     r += 1;
+   }
+
+
+   //decrease scale
+   else if (ch == '1')
+      scale -= 0.005;
+
+   //increase scale
+   else if (ch == '2')
+      scale += 0.005;
 
    glutPostRedisplay();
 }
@@ -160,6 +200,7 @@ void key(unsigned char ch,int x,int y)
  */
 void special(int key,int x,int y)
 {
+
    //  Right arrow key - increase azimuth by 5 degrees
    if (key == GLUT_KEY_RIGHT)
       th += 5;
