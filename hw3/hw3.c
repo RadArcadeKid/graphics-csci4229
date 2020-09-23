@@ -71,7 +71,7 @@ static void Vertex(double th,double ph)
  * This is useful for drawing ponds with DrawCircle
  */
 static void VertexCircle(double th,double ph){
-   glColor3f(0.0, 1.0, 1.0); //blueCircle
+   glColor3f(0.0, 0.9, 1.0); //blueCircle
    glVertex3d(Sin(th)*Cos(ph) , 0, Cos(th)*Cos(ph));
 }
 
