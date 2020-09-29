@@ -461,7 +461,7 @@ int main(int argc,char* argv[])
    glutInitWindowSize(600,600);
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    //  Create the window
-   glutCreateWindow("Jake Henson - HW3");
+   glutCreateWindow("HW3: Jake Henson");
    //  Tell GLUT to call "display" when the scene should be drawn
    glutDisplayFunc(display);
    //  Tell GLUT to call "reshape" when the window is resized
