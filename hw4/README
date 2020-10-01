@@ -3,11 +3,12 @@ hw4: Projections
 Jacob (Jake) Henson - 105963531
 CSCI4229/5229 Fall 2020
 
-** Time taken: Roughly 5-6 hours **
+** Time taken: Roughly 6 hours **
 
 Key bindings
   m/M               - Switch between viewing modes (Orthographic, Perspective, First-Person)
   W, A, S, D        - Move Forward, Backward, Left, Right respectively (first-person only)
+  shift + W,A,S,D   - Move faster/slower depending on if inputs are capitalized, like sprinting (first-person only)
   8                 - Decrease first-person camera view sensitivity (first-person only)
   9                 - Increase first-person camera sensitivity (first-person only)
   o/O               - Decrease field of view

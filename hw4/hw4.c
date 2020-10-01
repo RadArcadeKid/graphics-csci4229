@@ -1,5 +1,5 @@
 /*
- * hw3: Scene in 3D
+ * hw4: Projections
  *
  * Jacob (Jake) Henson - 105963531
  * CSCI4229/5229 Fall 2020
@@ -8,11 +8,18 @@
  * Also a cute lil scene with some flamingos!
  *
  * Key bindings
- * m         Switch between perspectives
- * arrow keys    Change view angle
- *  PgDn/PgUp  Zoom in and out
- * 0          Reset view angle
- * ESC        Exit
+ * m/M               - Switch between viewing modes (Orthographic, Perspective, First-Person)
+ * W, A, S, D        - Move Forward, Backward, Left, Right respectively (first-person only)
+ * shift + W,A,S,D   - Move faster/slower depending on if inputs are capitalized (first-person only)
+ * 8                 - Decrease first-person camera view sensitivity (first-person only)
+ * 9                 - Increase first-person camera sensitivity (first-person only)
+ * o/O               - Decrease field of view
+ * p/P               - Increase  field of view
+ * 1 (left bracket)  - Decrease world size (disabled in first-person)
+ * ] (right bracket) - Increase world size (disabled in first-person)
+ * arrow keys        - Change view angle
+ * 0                 - Reset view angle
+ * ESC               - Exit
  */
 
 
@@ -34,6 +41,7 @@ int ph_alt=0;  //  Elevation of view angle (and first person version)
 
 int th=-10;          //  Azimuth of view angle
 int ph=40;          //  Elevation of view angle
+double zh=0;       //  Rotation
 int mode = 0;       //projection mode
 int fov=55;       //  Field of view (for perspective)
 double asp=1;     //  Aspect ratio
@@ -120,6 +128,16 @@ static void VertexCircle(double th,double ph){
 }
 
 /*
+ *  Draw vertex in polar coordinates
+ *  NOTE - Used from ex8, BUT updated to work with beach ball
+ */
+static void VertexBB(double th,double ph)
+{
+   glVertex3d(Sin(th)*Cos(ph) , Sin(ph) , Cos(th)*Cos(ph));
+}
+
+
+/*
  *
  *  rawCircle adapted from Sphere2 from ex8
  *   Used to...well, draw a circle (or rather, a pond)
@@ -154,9 +172,45 @@ static void DrawCircle(double x, double z, double r){
 }
 
 
+static void DrawBeachBall(double x,double y,double z,double r, double zh)
+{
+   const int d=15;
+   int th,ph;
+
+   //  Save transformation
+   glPushMatrix();
+   //  Offset and scale
+   glTranslated(x,y,z);
+   glScaled(r,r,r);
+   glRotatef(zh,0,0.75,1); //rotate beachball
+
+   //  Latitude bands
+   for (ph=-90;ph<90;ph+=d)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0;th<=360;th+=d)
+      {
+        //add beachball colors
+         glColor3f(0.000, 0.7, 0.7);
+         if(th < 60)
+            glColor3f(0.000, 1.000, 0.498);
+
+         if(th > 220)
+            glColor3f(0.933, 0.510, 0.933);
+
+         VertexBB(th,ph);
+         VertexBB(th,ph+d);
+      }
+      glEnd();
+   }
+
+   //  Undo transformations
+   glPopMatrix();
+}
+
+
 /*
  * NeckCube - used for drawing the cube for the neck, since it needs to be smaller
- * TODO: add an S curve (perhaps around a sine wave?)
 */
 static void NeckCube(double x, double y, double z){
   glColor3f(1,0.6,1);
@@ -310,8 +364,17 @@ static void Flamingo(double x, double y, double z, float s, float ry){
           glScaled(0.5, 0.5, 0.5);
           glBegin(GL_QUAD_STRIP);
               glColor3f(1,0,1);
-              NeckCube(0.05, 1, 0.05); //delegated to its own function for simplicity
+              NeckCube(0.05, 1.1, 0.05); //delegated to its own function for simplicity
           glEnd();
+
+
+          //Rotate head depending on size
+          if(ry < 0.6)
+            glRotatef(25*Sin(zh),0,1,0); //rotate 15 degrees to get tilted down body
+
+          else
+            glRotatef(3.5*Sin(zh),0,1,1); //rotate 15 degrees to get tilted down body
+
 
           //draw head
           glTranslated(x-0.25,y+1,z);
@@ -327,8 +390,6 @@ static void Flamingo(double x, double y, double z, float s, float ry){
              glEnd();
           }
 
-          //TODO: draw eyes?
-
 
           //draw beak
           glTranslated(x-2.2,y-1,z);
@@ -340,6 +401,9 @@ static void Flamingo(double x, double y, double z, float s, float ry){
           glVertex3f(1.5, 0.2,0.0);
           glVertex3f(1.5, 1.5,0.0);
           glEnd();
+
+          //END rotation
+          glRotatef(-15,0,0,1); //rotate 15 degrees to get tilted down body
 
    glPopMatrix();
 }
@@ -362,6 +426,7 @@ static void DrawFlamingos(double x, double y, double z, double s, float rot, dou
  */
 void display()
 {
+
    glClearColor(0.0f, 0.45f, 0.34f, 1.0f); //change background color!
 
    //  Erase the window and the depth buffer
@@ -371,26 +436,23 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
 
-   if (mode == 1) //PROJECTION
+   if (mode == 1) //projection
    {
       double Ex = -2*dim*Sin(th)*Cos(ph);
       double Ey = +2*dim        *Sin(ph);
       double Ez = +2*dim*Cos(th)*Cos(ph);
       gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
    }
-   else if (mode == 2) //FIRST PERSON
+   else if (mode == 2) //FIRST PERSON CAMERA
        gluLookAt(fp_x, fp_y, fp_z,
        Cos(th_alt) + fp_x,
        Sin(ph_alt) + fp_y,
        Sin(th_alt) + fp_z,0,1,0);
-   else //ortho?
+   else //ortho
    {
       glRotatef(ph,1,0,0);
       glRotatef(th,0,1,0);
    }
-   // //  Set view angle
-   // glRotatef(ph,1,0,0);
-   // glRotatef(th,0,1,0);
 
    //Draw pond(s)
    DrawCircle(-0.5, 0, 1);
@@ -398,8 +460,13 @@ void display()
    DrawCircle(-0.75, 0.75, 0.6);
 
 
+   //Draw beachball!
+   float bb_float_y = 0.05 * Sin(zh);
+   float bb_float_z = 0.05 * Sin(zh);
+   DrawBeachBall(0,bb_float_z,bb_float_y, 0.2, 2*zh);
+
    //Draw Flamingos!
-   DrawFlamingos(1,0,-1,   0.5, 50, 1);
+   DrawFlamingos(1,0,-1,   0.5, -zh, 1);
    DrawFlamingos(0,0,-1,   0.6, 85, 1);
 
    DrawFlamingos(-1.5,0,-0.2,   0.6, 160, 0.8);
@@ -485,7 +552,6 @@ void special(int key,int x,int y)
  */
 void key(unsigned char ch,int x,int y)
 {
-    //TODO: Add/remove respective key bindings
    //  Exit on ESC
    if (ch == 27)
       exit(0);
@@ -517,22 +583,43 @@ void key(unsigned char ch,int x,int y)
 
    //if first person mode, allow for controls to navigate around the scene:
    if(mode == 2){
-     if (ch == 'w' || ch == 'W'){ //FORWARD
+     //walk
+     if (ch == 'w'){ //FORWARD
         fp_x += 0.1*Cos(th_alt);
         fp_z += 0.1*Sin(th_alt);
      }
-     else if (ch == 's' || ch == 'S'){ //BACKWARD
+     else if (ch == 's'){ //BACKWARD
         fp_x -= 0.1*Cos(th_alt);
         fp_z -= 0.1*Sin(th_alt);
      }
-     else if (ch == 'a' || ch =='A'){ //LEFT
+     else if (ch == 'a'){ //LEFT
         fp_x += 0.1*Sin(th_alt);
         fp_z -= 0.1*Cos(th_alt);
      }
-     else if (ch == 'd' || ch == 'D'){ //RIGHT
+     else if (ch == 'd'){ //RIGHT
         fp_x -= 0.1*Sin(th_alt);
         fp_z += 0.1*Cos(th_alt);
      }
+
+     //////////// move faster if shift key is held (really just caps lock, but it works )
+     else if (ch == 'W'){ //FORWARD
+        fp_x += 0.2*Cos(th_alt);
+        fp_z += 0.2*Sin(th_alt);
+     }
+     else if (ch == 'S'){ //BACKWARD
+        fp_x -= 0.2*Cos(th_alt);
+        fp_z -= 0.2*Sin(th_alt);
+     }
+     else if (ch =='A'){ //LEFT
+        fp_x += 0.2*Sin(th_alt);
+        fp_z -= 0.2*Cos(th_alt);
+     }
+     else if (ch == 'D'){ //RIGHT
+        fp_x -= 0.2*Sin(th_alt);
+        fp_z += 0.2*Cos(th_alt);
+     }
+     ////////////
+
 
      //First person - adjust camera sensitivity
      else if (ch == '8' && sensitivity > 1.0)
@@ -561,6 +648,16 @@ void reshape(int width,int height)
    Project();
 }
 
+/*
+ *  GLUT calls this toutine when there is nothing else to do
+ */
+void idle()
+{
+   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
+   zh = fmod(90*t,360);
+   glutPostRedisplay();
+}
+
 
 /*
  *  Start up GLUT and tell it what to do
@@ -573,7 +670,11 @@ int main(int argc,char* argv[])
    glutInitWindowSize(600,600);
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    //  Create the window
-   glutCreateWindow("HW3: Jake Henson");
+   glutCreateWindow("HW4 Projections: Jake Henson");
+
+   //Idle:
+   glutIdleFunc(idle);
+
    //  Tell GLUT to call "display" when the scene should be drawn
    glutDisplayFunc(display);
    //  Tell GLUT to call "reshape" when the window is resized
