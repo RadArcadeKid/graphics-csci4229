@@ -1,0 +1,12 @@
+hw4: Projections
+
+Jacob (Jake) Henson - 105963531
+CSCI4229/5229 Fall 2020
+
+** Time taken: Roughly 7-8 hours **
+
+Key bindings
+  t          Toggle axes + view angle text
+  arrows     Change view angle
+  0          Reset view angle
+  ESC        Exit
