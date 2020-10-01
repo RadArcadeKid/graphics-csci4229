@@ -28,6 +28,10 @@
 #include <GL/glut.h>
 #endif
 
+
+int th_alt=-135;  //  Azimuth of view angle (and first person version)
+int ph_alt=0;  //  Elevation of view angle (and first person version)
+
 int th=-10;          //  Azimuth of view angle
 int ph=40;          //  Elevation of view angle
 int mode = 0;       //projection mode
@@ -35,8 +39,14 @@ int fov=55;       //  Field of view (for perspective)
 double asp=1;     //  Aspect ratio
 double dim=2.5;    //World size
 
+double fp_x = 1.0; //first person coordinates
+double fp_y = 1.0;
+double fp_z = 1.0;
+
+double sensitivity = 2.4; //first person arrow key sensitivity
+
 //int axes=0;        //  Display axes toggle
-const char* text[] = {"Perspective","Orthographic","First-Person"};
+const char* text[] = {"Orthographic","Perspective","First-Person"};
 
 
 //  Cosine and Sine in degrees
@@ -361,15 +371,19 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
 
-   if (mode)
+   if (mode == 1) //PROJECTION
    {
       double Ex = -2*dim*Sin(th)*Cos(ph);
       double Ey = +2*dim        *Sin(ph);
       double Ez = +2*dim*Cos(th)*Cos(ph);
       gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
    }
-   //  Orthogonal - set world orientation
-   else
+   else if (mode == 2) //FIRST PERSON
+       gluLookAt(fp_x, fp_y, fp_z,
+       Cos(th_alt) + fp_x,
+       Sin(ph_alt) + fp_y,
+       Sin(th_alt) + fp_z,0,1,0);
+   else //ortho?
    {
       glRotatef(ph,1,0,0);
       glRotatef(th,0,1,0);
@@ -389,40 +403,25 @@ void display()
    DrawFlamingos(0,0,-1,   0.6, 85, 1);
 
    DrawFlamingos(-1.5,0,-0.2,   0.6, 160, 0.8);
-   //DrawFlamingos(-1.6,0,-0.1,   0.6, 180, 1); //too many of them!
-
 
    DrawFlamingos(0,0,1,   0.35, -40, 1.2);
    DrawFlamingos(0.7,0,1.2,   0.4, 270, 1);
 
+   DrawFlamingos(1.5,0,1.5,   0.5, 355, 1);
+   DrawFlamingos(-1.5,0,-1.5,   0.4, 185, 1);
+
 
    //  White
    glColor3f(1,1,1);
-   //  Draw axes
-   // if (axes)
-   // {
-   //    glBegin(GL_LINES);
-   //    glVertex3d(0.0,0.0,0.0);
-   //    glVertex3d(len,0.0,0.0);
-   //    glVertex3d(0.0,0.0,0.0);
-   //    glVertex3d(0.0,len,0.0);
-   //    glVertex3d(0.0,0.0,0.0);
-   //    glVertex3d(0.0,0.0,len);
-   //    glEnd();
-   //    //  Label axes
-   //    glRasterPos3d(len,0.0,0.0);
-   //    Print("X");
-   //    glRasterPos3d(0.0,len,0.0);
-   //    Print("Y");
-   //    glRasterPos3d(0.0,0.0,len);
-   //    Print("Z");
-   //  }
    //  Five pixels from the lower left corner of the window
    glWindowPos2i(5,5);
-   //  Print the text string
-    //  Print("Angle=%d,%d",th,ph, );
-   Print("Angle=%d,%d  Dim=%.1f FOV=%d Mode=%s",th,ph,dim,fov,text[mode]);
 
+   //Print parameters depending on view
+   if(mode == 2) //first person; separate print statement for alt angles
+     Print("Angle=%d,%d  Sensitivity=%.1f FOV=%d Mode=%s",th_alt,ph_alt,sensitivity,fov,text[mode]);
+
+   else     //ortho/projection
+     Print("Angle=%d,%d  Dim=%.1f FOV=%d Mode=%s",th,ph,dim,fov,text[mode]);
 
    //  Render the scene
 
@@ -436,24 +435,42 @@ void display()
  */
 void special(int key,int x,int y)
 {
-   //  Right arrow key - increase angle by 5 degrees
-   if (key == GLUT_KEY_RIGHT)
-      th += 5;
-   //  Left arrow key - decrease angle by 5 degrees
-   else if (key == GLUT_KEY_LEFT)
-      th -= 5;
-   //  Up arrow key - increase elevation by 5 degrees
-   else if (key == GLUT_KEY_UP)
-      ph += 5;
-   //  Down arrow key - decrease elevation by 5 degrees
-   else if (key == GLUT_KEY_DOWN)
-      ph -= 5;
-   //  PageUp key - increase dim
-   else if (key == GLUT_KEY_PAGE_UP)
-         dim += 0.1;
-   //  PageDown key - decrease dim
-   else if (key == GLUT_KEY_PAGE_DOWN && dim>1)
-         dim -= 0.1;
+  //Create an alternate scheme to rotate the angle around, so that the arrow keys control FPS perspective propely
+  if(mode == 2){ //FIRST PERSON
+      //  Right arrow key - increase angle by 5 degrees
+      if (key == GLUT_KEY_RIGHT)
+        th_alt += sensitivity;
+      //  Left arrow key - decrease angle by 5 degrees
+      else if (key == GLUT_KEY_LEFT)
+        th_alt -= sensitivity;
+      //  Up arrow key - increase elevation by 5 degrees
+      else if (key == GLUT_KEY_UP && ph_alt<100) //RESTRICT movement so the player can't disorient themselves too much
+        ph_alt += sensitivity;
+      //  Down arrow key - decrease elevation by 5 degrees
+      else if (key == GLUT_KEY_DOWN && ph_alt>-100)
+        ph_alt -= sensitivity;
+      //  Keep angle to +/-360 degrees
+      th_alt %= 360;
+  }
+  else //otherwise, rotate normally around the scene
+  {
+      //  Right arrow key - increase angle by 5 degrees
+      if (key == GLUT_KEY_RIGHT)
+        th += 5;
+      //  Left arrow key - decrease angle by 5 degrees
+      else if (key == GLUT_KEY_LEFT)
+        th -= 5;
+      //  Up arrow key - increase elevation by 5 degrees
+      else if (key == GLUT_KEY_UP)
+        ph += 5;
+      //  Down arrow key - decrease elevation by 5 degrees
+      else if (key == GLUT_KEY_DOWN)
+        ph -= 5;
+
+      //  Keep angles to +/-360 degrees
+      th %= 360;
+      ph %= 360;
+  }
    //  Keep angles to +/-360 degrees
    th %= 360;
    ph %= 360;
@@ -476,8 +493,10 @@ void key(unsigned char ch,int x,int y)
    else if (ch == '0'){
      th = -10;
      ph = 40;
-   }
-   //Change perspective mode
+     th_alt=-135; //reset first-person camera, too
+     ph_alt=0;
+     sensitivity = 2.5;
+   }   //Change perspective mode
    else if (ch == 'm' || ch == 'M'){
      mode = (mode+1)%3;
    }
@@ -487,32 +506,47 @@ void key(unsigned char ch,int x,int y)
       fov--;
    else if (ch == 'p' && ch<179)
       fov++;
-   //  Reproject
+
+   //  Right bracket key - increase dim
+   else if (ch == ']' && dim <5 && mode != 2)
+        dim += 0.1;
+   //  Left bracket key - decrease dim
+   else if (ch == '[' && dim>1 && mode != 2)
+        dim -= 0.1;
+
+
+   //if first person mode, allow for controls to navigate around the scene:
+   if(mode == 2){
+     if (ch == 'w' || ch == 'W'){ //FORWARD
+        fp_x += 0.1*Cos(th_alt);
+        fp_z += 0.1*Sin(th_alt);
+     }
+     else if (ch == 's' || ch == 'S'){ //BACKWARD
+        fp_x -= 0.1*Cos(th_alt);
+        fp_z -= 0.1*Sin(th_alt);
+     }
+     else if (ch == 'a' || ch =='A'){ //LEFT
+        fp_x += 0.1*Sin(th_alt);
+        fp_z -= 0.1*Cos(th_alt);
+     }
+     else if (ch == 'd' || ch == 'D'){ //RIGHT
+        fp_x -= 0.1*Sin(th_alt);
+        fp_z += 0.1*Cos(th_alt);
+     }
+
+     //First person - adjust camera sensitivity
+     else if (ch == '8' && sensitivity > 1.0)
+        sensitivity -= 0.2;
+
+     else if (ch == '9' && sensitivity < 7)
+        sensitivity += 0.2;
+
+  }
+
+   //  Reprojection
    Project();
    glutPostRedisplay();
 }
-
-// /* OLD RESHAPE FUNCTION //TODO: DELETE ME
-//  *  GLUT calls this routine when the window is resized
-//  */
-// void reshape(int width,int height)
-// {
-//    // const double dim=2.5;
-//    //  Ratio of the width to the height of the window
-//    double w2h = (height>0) ? (double)width/height : 1;
-//    //  Set the viewport to the entire window
-//    glViewport(0,0, width,height);
-//    //  Tell OpenGL we want to manipulate the projection matrix
-//    glMatrixMode(GL_PROJECTION);
-//    //  Undo previous transformations
-//    glLoadIdentity();
-//    //  Orthogonal projection
-//    glOrtho(-w2h*dim,+w2h*dim, -dim,+dim, -dim,+dim);
-//    //  Switch to manipulating the model matrix
-//    glMatrixMode(GL_MODELVIEW);
-//    //  Undo previous transformations
-//    glLoadIdentity();
-// }
 
 /*
  *  GLUT calls this routine when the window is resized; newer reshape function
