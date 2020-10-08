@@ -33,6 +33,8 @@
  */
 #include "CSCIx229.h"
 
+#define PI (3.1415927)
+
 int axes=0;       //  Display axes start with off
 int mode=1;       //  Projection mode
 int move=1;       //  Move light
@@ -150,10 +152,10 @@ const vtx xyz[] =
    };
 
    ////////////////////////////////////////////////
-//
-// /*
-//  * Draw triangle
-//  */
+
+/*
+ * Draw triangle
+ */
 // static void triangle(vtx A,vtx B,vtx C)
 // {
 //    //  Planar vector 0
@@ -212,11 +214,11 @@ const vtx xyz[] =
 // {
 //    //  Set specular color to white
 //    glColor3f(1,1,0);
-//    float black[]  = {0.0,0.0,0.0,1.0};
-//    float purple[]  = {1.0,0.0,0.5,1.0};
-//    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-//    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,purple);
-//    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
+   // float black[]  = {0.0,0.0,0.0,1.0};
+   // float purple[]  = {1.0,0.0,0.5,1.0};
+   // glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+   // glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,purple);
+   // glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
 //    //  Set transforms
 //    glPushMatrix();
 //    glTranslatef(x,y,z);
@@ -251,11 +253,11 @@ static void Vertex(double th,double ph)
 
 
 //TODO: REMOVE BALL
-/*
- *  Draw a ball
- *     at (x,y,z)
- *     radius (r)
- */
+// /*
+//  *  Draw a ball
+//  *     at (x,y,z)
+//  *     radius (r)
+//  */
 static void ball(double x,double y,double z,double r)
 {
    int th,ph;
@@ -286,14 +288,69 @@ static void ball(double x,double y,double z,double r)
    glPopMatrix();
 }
 
-//TODO: DRAW HELPER FUNCTIONS
-static void DrawCylinder(){
-  //CREATE LIGHTINNG FOR CYLINDER - useful for sides of controller + buttons
-  //perhaps parameterize color mode?
+/*
+ *  DrawCyliner - useful for sides of controller + buttons
+ *  h == height; r == radius
+ */
+static void DrawCylinder(double x,double y,double z, double th){
+  const double d=0.05;
+  float r = 0.9;
+  double h = 0.201;
+
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glScaled(1,1,1);
+
+
+  //draw sides of cylinder
+  glBegin(GL_QUAD_STRIP);
+  //glNormal3d(0.0, h, 0.0);
+    for(float i = 0; i <= 2.1*PI; i+=d){
+      glNormal3d(r * cos(i), h, r * sin(i));
+      glVertex3d(r * cos(i), h, r * sin(i));
+      glNormal3d(r * cos(i), -h, r * sin(i));
+      glVertex3d(r * cos(i), -h, r * sin(i));
+    }
+  glEnd();
+
+  glNormal3d(0,+1,0); //reset normals
+
+  //draw top and bottom cylinder
+  glBegin(GL_TRIANGLE_FAN);
+  glVertex3d(0.0, h, 0.0);
+  for (double i = 0.0; i < 2*PI*r*4; i+=.125) {
+    glVertex3d(r*cos(i), h, r*sin(i));
+  }
+  glEnd();
+
+  glNormal3d(0,-1,0); //reset normals
+
+
+  glBegin(GL_TRIANGLE_FAN);
+  glVertex3d(0.0, -h, 0.0);
+  for(double i = 0.0; i < 2*PI*r*4; i+=.125) {
+     glVertex3d(r * cos(i), -h, r*sin(i));
+  }
+  glEnd();
+
+
+  //  Undo transformations
+  glPopMatrix();
 }
-static void DrawDiagonalButton(){
+
+
+
+/*
+ *
+ *
+ */
+static void DrawDiagonalButton(double x, double y, double z, double s){
   //DRAW A DIAGONAL BUTTON AT THE REQUESTED PLACE
   //Useful for the select/start buttons and intends on the controller
+
 }
 
 /*
@@ -321,15 +378,17 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
 
   //cubeoid for center
   glColor3f(0.8,0.8,0.8); //center grey color
-  cube(0,0,0 , 1.1,0.2,0.8 , 0);
+  cube(0,0,0 , 1.4,0.2,0.7, 0);
 
   //left/right sides of controller with cylinders
-  glColor3f(0.5,0.17,0.8); //center grey color
-  
+  DrawCylinder(-1.3,0,0.2, 0);
+  DrawCylinder(1.3,0,0.2, 0);
 
+
+  //buttons
+  //color   glColor3f(0.541, 0.169, 0.886); //center purp color
 
   glPopMatrix();
-
 }
 
 
@@ -398,30 +457,7 @@ void display()
    else
       glDisable(GL_LIGHTING);
 
-   //  Draw individual objects
-   // if (obj==1) //TODO: remove object toggles
-   //   cube(0,0,0 , 1,1,1 , 0);
-   // else if (obj==2)
-   //   ball(0,0,0 , 1);
-   // else if (obj==3)
-   //   icosahedron(0,0,0 , 1 , 0);
-   // else if (obj==4)
-   //   icosasphere(0,0,0 , 1);
-   // //  Complex scene
-   // else if (obj==5)
-   // {
-   //   //DrawFlamingos(0,0,-1,   0.6, 85, 1);
-   //
-   // }
-   // //  Basic scene
-   // else
-   // {
-      //cube(+1,0,0 , 0.5,0.5,0.5 , 0);
-      //ball(-1,0,0 , 0.5);
-
-
-
-  SnesController(0,0,0, 0, 0, 1);
+  SnesController(0,0,0, 45, 45, 1);
 
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
