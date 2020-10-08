@@ -292,17 +292,16 @@ static void ball(double x,double y,double z,double r)
  *  DrawCyliner - useful for sides of controller + buttons
  *  h == height; r == radius
  */
-static void DrawCylinder(double x,double y,double z, double th){
+static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   const double d=0.05;
   float r = 0.9;
-  double h = 0.201;
+  double h = 0.201 + delta_h;
 
   //  Save transformation
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
-  glRotated(th,0,1,0);
-  glScaled(1,1,1);
+  glScaled(s,s,s);
 
 
   //draw sides of cylinder
@@ -347,10 +346,26 @@ static void DrawCylinder(double x,double y,double z, double th){
  *
  *
  */
-static void DrawDiagonalButton(double x, double y, double z, double s){
+static void DrawDiagonalButton(double x, double y, double z, double s, double th){
   //DRAW A DIAGONAL BUTTON AT THE REQUESTED PLACE
   //Useful for the select/start buttons and intends on the controller
 
+  //  Save transformation
+  glPushMatrix();
+
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glScaled(0.3*s, 0.3*s, 0.3*s);
+
+  //cubeoid for center
+  cube(0,0,0 ,1.2,0.2,0.9, 0);
+
+  //left/right sides of controller with cylinders
+  DrawCylinder(-1.2,0,0, 0, 1);
+  DrawCylinder(1.2,0,0, 0, 1);
+
+  glPopMatrix();
 }
 
 /*
@@ -378,15 +393,47 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
 
   //cubeoid for center
   glColor3f(0.8,0.8,0.8); //center grey color
-  cube(0,0,0 , 1.4,0.2,0.7, 0);
+  cube(0,0,0,  1.3,0.2,0.7, 0);
 
   //left/right sides of controller with cylinders
-  DrawCylinder(-1.3,0,0.2, 0);
-  DrawCylinder(1.3,0,0.2, 0);
+  DrawCylinder(-1.4,0,0.2, 0, 1);
+  DrawCylinder(1.4,0,0.2, 0, 1);
+
+  //shoulder buttons:
+  DrawDiagonalButton(1.23, 0, -0.5, 1, 0);
+  DrawDiagonalButton(-1.23, 0, -0.5, 1, 0);
 
 
-  //buttons
-  //color   glColor3f(0.541, 0.169, 0.886); //center purp color
+
+  //inner circle on right side
+  glColor3f(0.6, 0.6, 0.6); //button grey color
+  DrawCylinder(1.4, 0.04, 0.2, 0, 0.85); //inner circle for buttons
+
+
+  //button different color intents (right side)
+  glColor3f(0.8,0.8,0.8); //center grey color, inner things
+  DrawDiagonalButton(1.25,0.2, 0.0, 0.7, 45);
+  DrawDiagonalButton(1.6,0.2,0.4, 0.7, 45);
+
+
+  //select/start buttons
+  glColor3f(0.4, 0.4, 0.4); //button grey color
+  DrawDiagonalButton(0.25,0.2,0.25, 0.3, 45);
+  DrawDiagonalButton(-0.26,0.2,0.25, 0.3,45);
+
+  //cross button
+  cube(-1.45, 0.2, 0.2,   0.33, 0.1, 0.1,   0);
+  cube(-1.45, 0.2, 0.2,   0.33, 0.1, 0.1,  90);
+
+
+  //all 4 face buttons
+  glColor3f(0.541, 0.169, 0.886); //purp color
+  DrawCylinder(1.43, 0.25, 0.55, 0.3, 0.18);
+  DrawCylinder(1.77, 0.25, 0.23, 0.3, 0.18);
+
+  glColor3f(0.933, 0.510, 0.933); //pink color
+  DrawCylinder(1.08, 0.25, 0.19, 0.3, 0.18);
+  DrawCylinder(1.42, 0.25, -0.192, 0.3, 0.18);
 
   glPopMatrix();
 }
@@ -684,7 +731,7 @@ int main(int argc,char* argv[])
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    glutInitWindowSize(400,400);
-   glutCreateWindow("Lighting");
+   glutCreateWindow("HW5: Lighting, Jake Henson");
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
