@@ -1,5 +1,5 @@
-# Example 13
-EXE=ex13
+# Ehw5
+EXE=hw5
 
 # Main target
 all: $(EXE)
@@ -43,7 +43,7 @@ CSCIx229.a:fatal.o loadtexbmp.o print.o project.o errcheck.o object.o
 	g++ -c $(CFLG) $<
 
 #  Link
-ex13:ex13.o CSCIx229.a
+hw5:hw5.o CSCIx229.a
 	gcc -O3 -o $@ $^   $(LIBS)
 
 #  Clean

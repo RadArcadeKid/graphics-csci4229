@@ -1,35 +1,34 @@
 /*
- * hw5: Projections
- *
+ * hw5: Lighting
+ * *****Time taken: roughly 8 hours*********
  * Jacob (Jake) Henson - 105963531
  * CSCI4229/5229 Fall 2020
  *
  * A program demonstrating my ability to light a scene with custom objects
- *
- *  Demonstrates basic lighting using a cube, sphere and icosahedron.
- *
- *  Key bindings:
+ *  Key bindings
  *  l          Toggles lighting
- *  a/A        Decrease/increase ambient light
- *  d/D        Decrease/increase diffuse light
- *  s/S        Decrease/increase specular light
- *  e/E        Decrease/increase emitted light
- *  n/N        Decrease/increase shininess
- *  F1         Toggle smooth/flat shading
- *  F2         Toggle local viewer mode
- *  F3         Toggle light distance (1/5)
- *  F8         Change ball increment
- *  F9         Invert bottom normal
- *  m          Toggles light movement
- *  []         Lower/rise light
- *  p          Toggles ortogonal/perspective projection
- *  o          Cycles through objects
- *  +/-        Change field of view of perspective
- *  x          Toggle axes
- *  arrows     Change view angle
- *  PgDn/PgUp  Zoom in and out
- *  0          Reset view angle
- *  ESC        Exit
+*   a/A        Decrease/increase ambient light
+*   d/D        Decrease/increase diffuse light
+*   s/S        Decrease/increase specular light
+*   e/E        Decrease/increase emitted light
+*   n/N        Decrease/increase shininess
+*   F1         Toggle smooth/flat shading
+*   F2         Toggle local viewer mode
+*   F3         Toggle light distance (1/5)
+*   F8         Change ball increment
+*   F9         Invert bottom normal
+*   m          Toggles light movement
+*   p          Toggles ortogonal/perspective projection
+*   o          Cycles through objects
+*   ]/[        Change light azimuth
+*   h/H        Change light height
+*   8/5        Raise/lower light
+*   +/-        Change field of view of perspective
+*   x          Toggle axes
+*   arrows     Change view angle
+*   0          Reset view angle
+*   ESC        Exit
+
  */
 #include "CSCIx229.h"
 
@@ -37,11 +36,10 @@
 
 int axes=0;       //  Display axes start with off
 int mode=1;       //  Projection mode
-int move=1;       //  Move light
-int th=0;         //  Azimuth of view angle
-int ph=0;         //  Elevation of view angle
+int th=-40;         //  Azimuth of view angle
+int ph=30;         //  Elevation of view angle
+int move = 1;      //move light
 int fov=55;       //  Field of view (for perspective)
-//int obj=0;        //  Scene/opbject selection //TODO: REMOVE OBJ
 double asp=1;     //  Aspect ratio
 double dim=3;     //  Size of world
 // Light values
@@ -58,7 +56,7 @@ int specular  =   0;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
-float ylight  =   0;  // Elevation of light
+float ylight  =   1;  // Elevation of light
 typedef struct {float x,y,z;} vtx;
 typedef struct {int A,B,C;} tri;
 #define n 500
@@ -129,7 +127,7 @@ static void cube(double x,double y,double z,
    glPopMatrix();
 }
 
-////////////////////////////////////////////////////////
+
 /*
  *  Icosahedron data //TODO: REMOVE ICODATA
  */
@@ -151,91 +149,6 @@ const vtx xyz[] =
       {-0.276,-0.851,-0.447}, { 0.724,-0.526,-0.447}, { 0.000, 0.000,-1.000}
    };
 
-   ////////////////////////////////////////////////
-
-/*
- * Draw triangle
- */
-// static void triangle(vtx A,vtx B,vtx C)
-// {
-//    //  Planar vector 0
-//    float dx0 = A.x-B.x;
-//    float dy0 = A.y-B.y;
-//    float dz0 = A.z-B.z;
-//    //  Planar vector 1
-//    float dx1 = C.x-A.x;
-//    float dy1 = C.y-A.y;
-//    float dz1 = C.z-A.z;
-//    //  Normal
-//    float Nx = dy0*dz1 - dy1*dz0;
-//    float Ny = dz0*dx1 - dz1*dx0;
-//    float Nz = dx0*dy1 - dx1*dy0;
-//    //  Draw triangle
-//    glNormal3f(Nx,Ny,Nz);
-//    glBegin(GL_TRIANGLES);
-//    glVertex3f(A.x,A.y,A.z);
-//    glVertex3f(B.x,B.y,B.z);
-//    glVertex3f(C.x,C.y,C.z);
-//    glEnd();
-// }
-
-// /*
-//  *  Draw icosahedron
-//  *     at (x,y,z)
-//  *     size  s
-//  *     rotated th about the x axis
-//  */
-// static void icosahedron(float x,float y,float z,float s,float th)
-// {
-//    //  Set specular color to white
-//    glColor3f(1.0,0,0.5);
-//    float black[]  = {0.0,0.0,0.0,1.0};
-//    float purple[]  = {1.0,0.0,0.5,1.0};
-//    glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-//    glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,purple);
-//    glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-//    //  Draw icosahedron
-//    glPushMatrix();
-//    glTranslatef(x,y,z);
-//    glScalef(s,s,s);
-//    glRotatef(th,0,1,0);
-//    glRotatef(-90,1,0,0);
-//    for (int i=0;i<N;i++)
-//       triangle(xyz[idx[i].A],xyz[idx[i].B],xyz[idx[i].C]);
-//    glPopMatrix();
-// }
-
-// /*
-//  *  Draw sphere approximated as a icosahedron
-//  *     at (x,y,z)
-//  *     size  s
-//  */
-// static void icosasphere(float x,float y,float z,float s)
-// {
-//    //  Set specular color to white
-//    glColor3f(1,1,0);
-   // float black[]  = {0.0,0.0,0.0,1.0};
-   // float purple[]  = {1.0,0.0,0.5,1.0};
-   // glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-   // glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,purple);
-   // glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-//    //  Set transforms
-//    glPushMatrix();
-//    glTranslatef(x,y,z);
-//    glScalef(s,s,s);
-//    glRotatef(-90,1,0,0);
-//    //  Since this is a sphere the vertex and normal values are the same
-//    glVertexPointer(3,GL_FLOAT,0,xyz);
-//    glEnableClientState(GL_VERTEX_ARRAY);
-//    glNormalPointer(GL_FLOAT,0,xyz);
-//    glEnableClientState(GL_NORMAL_ARRAY);
-//    //  Draw icosahedron (3*N is number of vertices)
-//    glDrawElements(GL_TRIANGLES,3*N,GL_UNSIGNED_INT,idx);
-//    //  Reset state
-//    glDisableClientState(GL_VERTEX_ARRAY);
-//    glDisableClientState(GL_NORMAL_ARRAY);
-//    glPopMatrix();
-// }
 
 /*
  *  Draw vertex in polar coordinates with normal
@@ -252,12 +165,11 @@ static void Vertex(double th,double ph)
 }
 
 
-//TODO: REMOVE BALL
-// /*
-//  *  Draw a ball
-//  *     at (x,y,z)
-//  *     radius (r)
-//  */
+/*
+ *  Draw a ball
+ *     at (x,y,z)
+ *     radius (r)
+ */
 static void ball(double x,double y,double z,double r)
 {
    int th,ph;
@@ -288,6 +200,7 @@ static void ball(double x,double y,double z,double r)
    glPopMatrix();
 }
 
+
 /*
  *  DrawCyliner - useful for sides of controller + buttons
  *  h == height; r == radius
@@ -308,9 +221,9 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   glBegin(GL_QUAD_STRIP);
   //glNormal3d(0.0, h, 0.0);
     for(float i = 0; i <= 2.1*PI; i+=d){
-      glNormal3d(r * cos(i), h, r * sin(i));
+      glNormal3d(r * cos(i), 0, r * sin(i));
       glVertex3d(r * cos(i), h, r * sin(i));
-      glNormal3d(r * cos(i), -h, r * sin(i));
+      glNormal3d(r * cos(i), 0, r * sin(i));
       glVertex3d(r * cos(i), -h, r * sin(i));
     }
   glEnd();
@@ -340,13 +253,28 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   glPopMatrix();
 }
 
+static void Ground(double x, double y, double z, double s){
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glScaled(s,s,s);
 
+  glBegin(GL_QUADS);
+  glColor3f(0.125, 0.698, 0.667);
+  glNormal3f( 0,+1, 0);
+  glVertex3f(-1,0,+1);
+  glVertex3f(+1,0,+1);
+  glVertex3f(+1,0,-1);
+  glVertex3f(-1,0,-1);
+  glEnd();
+  glPopMatrix();
+}
 
 /*
  *
  *
  */
-static void DrawDiagonalButton(double x, double y, double z, double s, double th){
+static void DrawDiagonalButton(double x, double y, double z, double s, double th, double ph){
   //DRAW A DIAGONAL BUTTON AT THE REQUESTED PLACE
   //Useful for the select/start buttons and intends on the controller
 
@@ -356,6 +284,7 @@ static void DrawDiagonalButton(double x, double y, double z, double s, double th
   //  Offset, scale and rotate
   glTranslated(x,y,z);
   glRotated(th,0,1,0);
+  glRotated(ph,1,0,0);
   glScaled(0.3*s, 0.3*s, 0.3*s);
 
   //cubeoid for center
@@ -367,6 +296,60 @@ static void DrawDiagonalButton(double x, double y, double z, double s, double th
 
   glPopMatrix();
 }
+
+/*
+ *
+ * Draw an SNES console!
+ * I know the instructions say not to make an object entirely of cubes, but 90% of the SNES is ostensably cubes
+ * I did my best to mix it up and show that I can create complex objects and not make this lazy
+ */
+void DrawSNES(double x, double y, double z, double s){
+
+   glPushMatrix();
+   glTranslated(x,y,z);
+   glScaled(s,s,s);
+
+   //Draw base
+   glColor3f(0.4, 0.4, 0.4); //button grey color
+   cube(0,-0.3,0 ,1,0.2,1, 0);
+
+   glColor3f(0.72,0.72,0.72); //slightly darker center grey color
+   cube(0,-0.25,0 , 1.07, 0.1, 1.07, 0);
+
+   glColor3f(0.8,0.8,0.8); //primary body  grey color
+   cube(0, -0.02,0 , 1.07, 0.1, 1.07, 0);
+
+   //controller stocks
+   cube(-0.5, -0.1, 0.1,   0.2, 0.25, 1.07, 0);
+   cube(0.5, -0.1, 0.1,   0.2, 0.25, 1.07, 0);
+
+   //backside
+   cube(0, 0.1, -0.55,       1.07, 0.08, 0.52, 0);
+
+
+   //top buttons
+   glColor3f(0.541, 0.169, 0.886); //purp color
+   cube(-0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
+   cube(0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
+
+
+   //front controller ports
+   glColor3f(0.5, 0.5, 0.5); //button grey color
+   glScaled(s, 0.8 *s, s); //lazy way to rescale button cause I don't feel like adding more parameters for every call
+   DrawDiagonalButton(-0.5, -0.15, 1.2, 0.26, 0, 90);
+   DrawDiagonalButton(0.5, -0.15, 1.2, 0.26, 0, 90);
+
+   //glScaled(s, s, s); //reset scale
+
+   //top bevel piece
+   glRotated(180, 1, 1, 0);
+   glColor3f(0.8,0.8,0.8); //primary body  grey color
+   DrawCylinder(0,0,0.45, 2.4, 0.4);
+
+
+   glPopMatrix();
+}
+
 
 /*
  *
@@ -400,8 +383,8 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
   DrawCylinder(1.4,0,0.2, 0, 1);
 
   //shoulder buttons:
-  DrawDiagonalButton(1.23, 0, -0.5, 1, 0);
-  DrawDiagonalButton(-1.23, 0, -0.5, 1, 0);
+  DrawDiagonalButton(1.23, 0, -0.5, 1, 0, 0);
+  DrawDiagonalButton(-1.23, 0, -0.5, 1, 0, 0);
 
 
 
@@ -412,14 +395,14 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
 
   //button different color intents (right side)
   glColor3f(0.8,0.8,0.8); //center grey color, inner things
-  DrawDiagonalButton(1.25,0.2, 0.0, 0.7, 45);
-  DrawDiagonalButton(1.6,0.2,0.4, 0.7, 45);
+  DrawDiagonalButton(1.25,0.2, 0.0, 0.7, 45, 0);
+  DrawDiagonalButton(1.6,0.2,0.4, 0.7, 45, 0);
 
 
   //select/start buttons
   glColor3f(0.4, 0.4, 0.4); //button grey color
-  DrawDiagonalButton(0.25,0.2,0.25, 0.3, 45);
-  DrawDiagonalButton(-0.26,0.2,0.25, 0.3,45);
+  DrawDiagonalButton(0.25,0.3,0.25, 0.3, 45, 0);
+  DrawDiagonalButton(-0.26,0.3,0.25, 0.3,45, 0);
 
   //cross button
   cube(-1.45, 0.2, 0.2,   0.33, 0.1, 0.1,   0);
@@ -444,7 +427,7 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
  */
 void display()
 {
-   //glClearColor(0.1, 0, 0.1, 1.0f); //change background color
+   glClearColor(0.1, 0, 0.1, 1.0f); //change background color
 
    const double len=2.0;  //  Length of axes
    //  Erase the window and the depth buffer
@@ -504,7 +487,20 @@ void display()
    else
       glDisable(GL_LIGHTING);
 
-  SnesController(0,0,0, 45, 45, 1);
+/////////////////////////
+
+   //Display objects!!
+
+   //Display ground
+   Ground(0,-0.5,0, 3);
+
+   //Display Snes
+   DrawSNES(0,0,0, 1);
+
+   //Display SNES controllers
+   SnesController(1.5,0,1, 45, 45, 0.4);
+   SnesController(-1.5, 1.3, 0.75, -45, 45, 0.5);
+
 
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
@@ -530,15 +526,18 @@ void display()
 
    //  Display parameters
    glWindowPos2i(5,5);
-   Print("Angle=%d,%d  Dim=%.1f FOV=%d Projection=%s Light=%s",
-     th,ph,dim,fov,mode?"Perpective":"Orthogonal",light?"On":"Off");
+   Print("Angle=%d,%d  FOV=%d Projection=%s Light=%s",
+     th,ph,fov,mode?"Perpective":"Orthogonal",light?"On":"Off");
    if (light)
    {
       glWindowPos2i(5,45);
       Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
       glWindowPos2i(5,25);
       Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shiny);
+      Print("ylight = %d", ylight);
+
    }
+
 
    //  Render the scene and make it visible
    ErrCheck("display");
@@ -547,7 +546,7 @@ void display()
 }
 
 /*
- *  GLUT calls this routine when the window is resized
+ *  GLUT calls this routine when idling
  */
 void idle()
 {
@@ -557,6 +556,7 @@ void idle()
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
+
 
 /*
  *  GLUT calls this routine when an arrow key is pressed
@@ -575,12 +575,6 @@ void special(int key,int x,int y)
    //  Down arrow key - decrease elevation by 5 degrees
    else if (key == GLUT_KEY_DOWN)
       ph -= 5;
-   //  PageUp key - increase dim
-   else if (key == GLUT_KEY_PAGE_DOWN)
-      dim += 0.1;
-   //  PageDown key - decrease dim
-   else if (key == GLUT_KEY_PAGE_UP && dim>1)
-      dim -= 0.1;
    //  Smooth color model
    else if (key == GLUT_KEY_F1)
       smooth = 1-smooth;
@@ -613,8 +607,10 @@ void key(unsigned char ch,int x,int y)
    if (ch == 27)
       exit(0);
    //  Reset view angle
-   else if (ch == '0')
-      th = ph = 0;
+   else if (ch == '0'){
+      th = -35;
+      ph = 40;
+  }
    //  Toggle axes
    else if (ch == 'x' || ch == 'X')
       axes = 1-axes;
@@ -624,24 +620,6 @@ void key(unsigned char ch,int x,int y)
    //  Switch projection mode
    else if (ch == 'p' || ch == 'P')
       mode = 1-mode;
-   //  Toggle light movement
-   else if (ch == 'm' || ch == 'M')
-      move = 1-move;
-   //  Move light
-   else if (ch == '<')
-      zh += 1;
-   else if (ch == '>')
-      zh -= 1;
-   //  Change field of view angle
-   else if (ch == '-' && ch>1)
-      fov--;
-   else if (ch == '+' && ch<179)
-      fov++;
-   //  Light elevation
-   else if (ch=='[')
-      ylight -= 0.1;
-   else if (ch==']')
-      ylight += 0.1;
    //  Ambient level
    else if (ch=='a' && ambient>0)
       ambient -= 5;
@@ -652,6 +630,28 @@ void key(unsigned char ch,int x,int y)
       diffuse -= 5;
    else if (ch=='D' && diffuse<100)
       diffuse += 5;
+   //  Move light
+   else if (ch == ']')
+      zh += 1;
+   else if (ch == '[')
+      zh -= 1;
+   // light height
+   else if (ch == 'H')
+      ylight += 0.5;
+   else if (ch == 'h')
+      ylight -= 0.5;
+  // lfov
+  else if (ch == '+')
+      fov += 1;
+  else if (ch == '-')
+      fov -= 1;
+
+  //  Toggle light movement
+  else if (ch == 'm' || ch == 'M')
+      move = 1-move;
+
+
+
    //  Specular level
    else if (ch=='s' && specular>0)
       specular -= 5;
@@ -667,11 +667,6 @@ void key(unsigned char ch,int x,int y)
       shininess -= 1;
    else if (ch=='N' && shininess<7)
       shininess += 1;
-   //  Switch scene/object
-   // else if (ch == 'o') //TODO: remove light radius toggle
-   //    obj = (obj+1)%6;
-   // else if (ch == 'O')
-   //    obj = (obj+5)%6;
    //  Translate shininess power to value (-1 => 0)
    shiny = shininess<0 ? 0 : pow(2.0,shininess);
    //  Reproject
@@ -730,7 +725,7 @@ int main(int argc,char* argv[])
    glutInit(&argc,argv);
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
-   glutInitWindowSize(400,400);
+   glutInitWindowSize(600,600);
    glutCreateWindow("HW5: Lighting, Jake Henson");
    //  Set callbacks
    glutDisplayFunc(display);
