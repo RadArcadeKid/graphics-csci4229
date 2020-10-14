@@ -20,7 +20,8 @@ if the light can be stopped and moved under user control in addition to moving
 automatically. Choose your light positions such that the lighting effects are
 demonstrated well.
 
-What to turn in:
+What to turn in:.
+
 1) Source code, makefile to build hw5 and readme;
 2) Approximate time spent on the project.
 
