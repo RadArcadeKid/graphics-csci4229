@@ -1,5 +1,5 @@
 /*
- * hw6: Textures
+ * hw5: Lighting
  * *****Time taken: roughly 8 hours*********
  * Jacob (Jake) Henson - 105963531
  * CSCI4229/5229 Fall 2020
@@ -42,11 +42,6 @@ int move = 1;      //move light
 int fov=55;       //  Field of view (for perspective)
 double asp=1;     //  Aspect ratio
 double dim=3;     //  Size of world
-
-//Texture coordinates:
-int ntex=0;       //  Cube faces
-
-
 // Light values
 int light     =   1;  // Lighting
 int one       =   1;  // Unit value
@@ -737,13 +732,6 @@ int main(int argc,char* argv[])
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
-   //  Load textures
-   texture[0] = LoadTexBMP("crate.bmp");
-   //texture[1] = LoadTexBMP("img1.bmp");
-   //TODO: Add cool textures
-
-
-
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();

@@ -1,19 +1,32 @@
-ex14: Texture Mapping
+hw5: Lighting
 
-Willem A. (Vlakkies) Schreuder
+Jacob (Jake) Henson
 CSCI4229/5229 Fall 2020
 
-Demonstrates basic texture mapping.
+HW5 Demonstrates my ability to generate objects and apply normal maps to them
+
+/*Time taken: roughly 8 hours*/
 
 Key bindings
-  t          Cycle through tecture maps
-  c          Cycle through colors
-  o          Cycle through objects
-  m          Toggles texture mode between modulate and replace
-  +/-        Change repeat
-  x/X        Move corner left/right
-  y/Y        Move corner up/down
-  a          Toggle axes
+  l          Toggles lighting
+  a/A        Decrease/increase ambient light
+  d/D        Decrease/increase diffuse light
+  s/S        Decrease/increase specular light
+  e/E        Decrease/increase emitted light
+  n/N        Decrease/increase shininess
+  F1         Toggle smooth/flat shading
+  F2         Toggle local viewer mode
+  F3         Toggle light distance (1/5)
+  F8         Change ball increment
+  F9         Invert bottom normal
+  m          Toggles light movement
+  p          Toggles ortogonal/perspective projection
+  o          Cycles through objects
+  ]/[        Change light azimuth
+  h/H        Change light height
+  8/5        Raise/lower light
+  +/-        Change field of view of perspective
+  x          Toggle axes
   arrows     Change view angle
   0          Reset view angle
   ESC        Exit
