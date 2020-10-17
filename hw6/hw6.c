@@ -1,4 +1,4 @@
-/*
+  /*
  * hw5: Lighting
  * *****Time taken: roughly 8 hours*********
  * Jacob (Jake) Henson - 105963531
@@ -57,6 +57,11 @@ int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   1;  // Elevation of light
+
+//Texture array:
+unsigned int texture[9]; // Texture names
+
+
 typedef struct {float x,y,z;} vtx;
 typedef struct {int A,B,C;} tri;
 #define n 500
@@ -70,7 +75,7 @@ vtx is[n];
  */
 static void cube(double x,double y,double z,
                  double dx,double dy,double dz,
-                 double th)
+                 double th) //todo -- add
 {
    //  Set specular color to white
    float white[] = {1,1,1,1};
@@ -83,44 +88,59 @@ static void cube(double x,double y,double z,
    //  Offset, scale and rotate
    glTranslated(x,y,z);
    glRotated(th,0,1,0);
-   glScaled(dx,dy,dz);
+   glScaled(dx, dy, dz);
+
    //  Cube
+   //todo: add if statement for texture type here
+   //if (snes)
+   //if (button)
+   //if (port)
+   //if (controller)
+
+   int ts = 2;
+
+   double sx = ts*dx;
+   double sy = ts*dy;
+   double sz = ts*dz;
+
+
    glBegin(GL_QUADS);
    glNormal3f( 0, 0, 1);
-   glVertex3f(-1,-1, 1);
-   glVertex3f(+1,-1, 1);
-   glVertex3f(+1,+1, 1);
-   glVertex3f(-1,+1, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(sx,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(sx,sy); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,sy);  glVertex3f(-1,+1, 1);
+
    //  Back
    glNormal3f( 0, 0,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,+1,-1);
-   glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,sy); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,-1);
    //  Right
    glNormal3f(+1, 0, 0);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(+1,+1,+1);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(sz,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(sz,sy); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,+1);
    //  Left
    glNormal3f(-1, 0, 0);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(-1,-1,+1);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sz,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(sz,sy); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,sy); glVertex3f(-1,+1,-1);
    //  Top
    glNormal3f( 0,+1, 0);
-   glVertex3f(-1,+1,+1);
-   glVertex3f(+1,+1,+1);
-   glVertex3f(+1,+1,-1);
-   glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(sx,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,sz); glVertex3f(-1,+1,-1);
    //  Bottom
    glNormal3f( 0,-one, 0);
-   glVertex3f(-1,-1,-1);
-   glVertex3f(+1,-1,-1);
-   glVertex3f(+1,-1,+1);
-   glVertex3f(-1,-1,+1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,sz); glVertex3f(-1,-1,+1);
    //  End
    glEnd();
    //  Undo transofrmations
@@ -128,18 +148,6 @@ static void cube(double x,double y,double z,
 }
 
 
-/*
- *  Icosahedron data //TODO: REMOVE ICODATA
- */
-const int N=20;
-//  Triangle index list
-const tri idx[] =
-   {
-      { 2, 1, 0}, { 3, 2, 0}, { 4, 3, 0}, { 5, 4, 0}, { 1, 5, 0},
-      {11, 6, 7}, {11, 7, 8}, {11, 8, 9}, {11, 9,10}, {11,10, 6},
-      { 1, 2, 6}, { 2, 3, 7}, { 3, 4, 8}, { 4, 5, 9}, { 5, 1,10},
-      { 2, 7, 6}, { 3, 8, 7}, { 4, 9, 8}, { 5,10, 9}, { 1, 6,10}
-   };
 //  Vertex coordinates
 const vtx xyz[] =
    {
@@ -216,14 +224,21 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   glTranslated(x,y,z);
   glScaled(s,s,s);
 
+  double ts = 1;
 
   //draw sides of cylinder
   glBegin(GL_QUAD_STRIP);
   //glNormal3d(0.0, h, 0.0);
     for(float i = 0; i <= 2.1*PI; i+=d){
       glNormal3d(r * cos(i), 0, r * sin(i));
-      glVertex3d(r * cos(i), h, r * sin(i));
-      glVertex3d(r * cos(i), -h, r * sin(i));
+
+      //Shoutout to the kind soul on StackOverflow who happened to have a texture map which worked PERFECTLY
+      //with my implementation of the cylinder -- source: https://stackoverflow.com/questions/26536570/how-do-i-texture-a-cylinder-in-opengl-created-with-triangle-strip
+      const float tc = ( i / (float)( 2 * PI ) );
+      glTexCoord2f( tc, -0.1 );
+      glVertex3f(r * cos(i), -h, r * sin(i));
+      glTexCoord2f( tc, 1.0 );
+      glVertex3f(r * cos(i), h, r * sin(i));
     }
   glEnd();
 
@@ -233,16 +248,17 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   glBegin(GL_TRIANGLE_FAN);
   glVertex3d(0.0, h, 0.0);
   for (double i = 0.0; i < 2*PI*r*4; i+=.125) {
+    glTexCoord2f(ts/2*Cos(i)+0.5,ts/2*Sin(i)+0.5);
     glVertex3d(r*cos(i), h, r*sin(i));
   }
   glEnd();
 
   glNormal3d(0,-1,0); //reset normals
 
-
   glBegin(GL_TRIANGLE_FAN);
   glVertex3d(0.0, -h, 0.0);
   for(double i = 0.0; i < 2*PI*r*4; i+=.125) {
+    glTexCoord2f(ts/2*Cos(i)+0.5,ts/2*Sin(i)+0.5);
      glVertex3d(r * cos(i), -h, r*sin(i));
   }
   glEnd();
@@ -258,14 +274,23 @@ static void Ground(double x, double y, double z, double s){
   glTranslated(x,y,z);
   glScaled(s,s,s);
 
+  double carpet_size = 1.5;
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+  glColor3f(0.8, 0.8, 0.8);
+  glBindTexture(GL_TEXTURE_2D,texture[3]); //carpet
   glBegin(GL_QUADS);
   glColor3f(0.125, 0.698, 0.667);
   glNormal3f( 0,+1, 0);
-  glVertex3f(-1,0,+1);
-  glVertex3f(+1,0,+1);
-  glVertex3f(+1,0,-1);
-  glVertex3f(-1,0,-1);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(carpet_size,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(carpet_size,carpet_size); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,carpet_size); glVertex3f(-1,0,-1);
   glEnd();
+  glDisable(GL_TEXTURE_2D);
   glPopMatrix();
 }
 
@@ -310,8 +335,17 @@ void DrawSNES(double x, double y, double z, double s){
 
    //Draw base
    glColor3f(0.4, 0.4, 0.4); //button grey color
+
+   ////textures
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+   //glColor3f(0.8, 0.8, 0.8);
+   glBindTexture(GL_TEXTURE_2D,texture[5]); //pattern
    cube(0,-0.3,0 ,1,0.2,1, 0);
 
+
+   glBindTexture(GL_TEXTURE_2D,texture[2]); //pattern
    glColor3f(0.72,0.72,0.72); //slightly darker center grey color
    cube(0,-0.25,0 , 1.07, 0.1, 1.07, 0);
 
@@ -343,10 +377,13 @@ void DrawSNES(double x, double y, double z, double s){
    //top bevel piece
    glRotated(180, 1, 1, 0);
    glColor3f(0.8,0.8,0.8); //primary body  grey color
+   glBindTexture(GL_TEXTURE_2D,texture[5]); //pattern
    DrawCylinder(0,0,0.45, 2.4, 0.4);
 
 
    glPopMatrix();
+   glDisable(GL_TEXTURE_2D);
+
 }
 
 
@@ -356,9 +393,7 @@ void DrawSNES(double x, double y, double z, double s){
  *
  *
  */
-static void SnesController(double x,double y,double z, double th, double ph, double s){
-  //TODO:
-  //Display light properties
+static void SnesController(double x,double y,double z, double th, double ph, double s){  //Display light properties
   //  Set specular color to white
   float white[] = {1,1,1,1};
   float black[] = {0,0,0,1};
@@ -485,8 +520,6 @@ void display()
    }
    else
       glDisable(GL_LIGHTING);
-
-/////////////////////////
 
    //Display objects!!
 
@@ -725,13 +758,28 @@ int main(int argc,char* argv[])
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    glutInitWindowSize(600,600);
-   glutCreateWindow("HW5: Lighting, Jake Henson");
+   glutCreateWindow("HW6: Textures, Jake Henson");
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
+   glutIdleFunc(idle);
+
+   //  Load textures
+   texture[0] = LoadTexBMP("crate.bmp"); //flashy 90s texture
+   //texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
+   texture[1] = LoadTexBMP("90s_pattern.bmp"); //light 90s texture
+   texture[2] = LoadTexBMP("90s_pattern_2.bmp"); //pink 90s texture
+   texture[3] = LoadTexBMP("carpet.bmp"); //carpet
+   texture[4] = LoadTexBMP("controllerport.bmp"); //controller port texture
+   texture[5] = LoadTexBMP("metal.bmp"); //metal
+   texture[6] = LoadTexBMP("power_buttons.bmp"); //power buttons
+   texture[7] = LoadTexBMP("purple90s.bmp"); //synhwavey texture
+   texture[8] = LoadTexBMP("reset_buttons.bmp"); //synhwavey texture
+
+
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
    glutMainLoop();
