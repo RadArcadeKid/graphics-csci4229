@@ -224,18 +224,13 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   glTranslated(x,y,z);
   glScaled(s,s,s);
 
-  double ts = 1;
-
   //draw sides of cylinder
   glBegin(GL_QUAD_STRIP);
   //glNormal3d(0.0, h, 0.0);
     for(float i = 0; i <= 2.1*PI; i+=d){
       glNormal3d(r * cos(i), 0, r * sin(i));
-
-      //Shoutout to the kind soul on StackOverflow who happened to have a texture map which worked PERFECTLY
-      //with my implementation of the cylinder -- source: https://stackoverflow.com/questions/26536570/how-do-i-texture-a-cylinder-in-opengl-created-with-triangle-strip
-      const float tc = ( i / (float)( 2 * PI ) );
-      glTexCoord2f( tc, -0.1 );
+      const float tc = ( i / (float)( 2 * PI ) * h);
+      glTexCoord2f(tc, -1.0 );
       glVertex3f(r * cos(i), -h, r * sin(i));
       glTexCoord2f( tc, 1.0 );
       glVertex3f(r * cos(i), h, r * sin(i));
@@ -244,24 +239,37 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
 
   glNormal3d(0,+1,0); //reset normals
 
-  //draw top and bottom cylinder
-  glBegin(GL_TRIANGLE_FAN);
-  glVertex3d(0.0, h, 0.0);
-  for (double i = 0.0; i < 2*PI*r*4; i+=.125) {
-    glTexCoord2f(ts/2*Cos(i)+0.5,ts/2*Sin(i)+0.5);
-    glVertex3d(r*cos(i), h, r*sin(i));
-  }
-  glEnd();
-
-  glNormal3d(0,-1,0); //reset normals
 
   glBegin(GL_TRIANGLE_FAN);
-  glVertex3d(0.0, -h, 0.0);
-  for(double i = 0.0; i < 2*PI*r*4; i+=.125) {
-    glTexCoord2f(ts/2*Cos(i)+0.5,ts/2*Sin(i)+0.5);
-     glVertex3d(r * cos(i), -h, r*sin(i));
-  }
-  glEnd();
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, h, 0);  /* center */
+        for (double i = 2 * PI; i >= 0; i -= d)
+
+        {
+            glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
+            glVertex3f(r * cos(i), h, r * sin(i));
+        }
+        /* close the loop back to 0 degrees */
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(r, h, 0);
+    glEnd();
+
+    /* bottom triangle: note: for is in reverse order */
+    glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, 0, 0);  /* center */
+        for (double i = 0; i <= 2 * PI; i += d)
+        {
+            glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
+            glVertex3f(r * cos(i), 0, r * sin(i));
+        }
+    glEnd();
+
+
+    
+  //Shoutout to the kind soul on StackOverflow who happened to have a texture map which worked PERFECTLY
+  //with my implementation of the cylinder -- source: https://stackoverflow.com/questions/26536570/how-do-i-texture-a-cylinder-in-opengl-created-with-triangle-strip
+
 
 
   //  Undo transformations
@@ -336,12 +344,9 @@ void DrawSNES(double x, double y, double z, double s){
    //Draw base
    glColor3f(0.4, 0.4, 0.4); //button grey color
 
-   ////textures
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-   //glColor3f(0.8, 0.8, 0.8);
-   glBindTexture(GL_TEXTURE_2D,texture[5]); //pattern
+   glBindTexture(GL_TEXTURE_2D,texture[5]); //metal bottom
    cube(0,-0.3,0 ,1,0.2,1, 0);
 
 
@@ -362,13 +367,16 @@ void DrawSNES(double x, double y, double z, double s){
 
    //top buttons
    glColor3f(0.541, 0.169, 0.886); //purp color
+   glBindTexture(GL_TEXTURE_2D,texture[6]); //pattern
    cube(-0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
+   glBindTexture(GL_TEXTURE_2D,texture[8]); //pattern
    cube(0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
 
 
    //front controller ports
    glColor3f(0.5, 0.5, 0.5); //button grey color
    glScaled(s, 0.8 *s, s); //lazy way to rescale button cause I don't feel like adding more parameters for every call
+   glBindTexture(GL_TEXTURE_2D,texture[4]); //pattern
    DrawDiagonalButton(-0.5, -0.15, 1.2, 0.26, 0, 90);
    DrawDiagonalButton(0.5, -0.15, 1.2, 0.26, 0, 90);
 
@@ -377,7 +385,7 @@ void DrawSNES(double x, double y, double z, double s){
    //top bevel piece
    glRotated(180, 1, 1, 0);
    glColor3f(0.8,0.8,0.8); //primary body  grey color
-   glBindTexture(GL_TEXTURE_2D,texture[5]); //pattern
+   glBindTexture(GL_TEXTURE_2D,texture[7]); //pattern
    DrawCylinder(0,0,0.45, 2.4, 0.4);
 
 
@@ -407,9 +415,14 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
   glRotated(th,0,1,0);
   glRotated(ph,1,0,0);
   glScaled(s,s,s);
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+
 
   //cubeoid for center
   glColor3f(0.8,0.8,0.8); //center grey color
+
+  glBindTexture(GL_TEXTURE_2D,texture[2]); //pattern
   cube(0,0,0,  1.3,0.2,0.7, 0);
 
   //left/right sides of controller with cylinders
@@ -417,12 +430,14 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
   DrawCylinder(1.4,0,0.2, 0, 1);
 
   //shoulder buttons:
+  glBindTexture(GL_TEXTURE_2D,texture[7]); //pattern
   DrawDiagonalButton(1.23, 0, -0.5, 1, 0, 0);
   DrawDiagonalButton(-1.23, 0, -0.5, 1, 0, 0);
 
 
 
   //inner circle on right side
+  glBindTexture(GL_TEXTURE_2D,texture[1]); //pattern
   glColor3f(0.6, 0.6, 0.6); //button grey color
   DrawCylinder(1.4, 0.04, 0.2, 0, 0.85); //inner circle for buttons
 
@@ -453,6 +468,7 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
   DrawCylinder(1.42, 0.25, -0.192, 0.3, 0.18);
 
   glPopMatrix();
+  glDisable(GL_TEXTURE_2D);
 }
 
 
@@ -768,7 +784,7 @@ int main(int argc,char* argv[])
    glutIdleFunc(idle);
 
    //  Load textures
-   texture[0] = LoadTexBMP("crate.bmp"); //flashy 90s texture
+   texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
    //texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
    texture[1] = LoadTexBMP("90s_pattern.bmp"); //light 90s texture
    texture[2] = LoadTexBMP("90s_pattern_2.bmp"); //pink 90s texture
