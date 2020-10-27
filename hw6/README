@@ -1,11 +1,14 @@
-hw5: Lighting
+hw6: textures 
 
 Jacob (Jake) Henson
 CSCI4229/5229 Fall 2020
 
-HW5 Demonstrates my ability to generate objects and apply normal maps to them
+HW5 Demonstrates my ability to apply textures
 
-/*Time taken: roughly 8 hours*/
+NOTE -- These textures are DELIBERATELY very strange and silly
+This is done for that cheesy 80's 90's stylistic aesthetic!
+
+/*Time taken: roughly 9 hours*/
 
 Key bindings
   l          Toggles lighting

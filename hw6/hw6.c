@@ -1,6 +1,6 @@
   /*
- * hw5: Lighting
- * *****Time taken: roughly 8 hours*********
+ * hw6: textures
+ * *****Time taken: roughly 9 hours*********
  * Jacob (Jake) Henson - 105963531
  * CSCI4229/5229 Fall 2020
  *
@@ -229,10 +229,10 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
   //glNormal3d(0.0, h, 0.0);
     for(float i = 0; i <= 2.1*PI; i+=d){
       glNormal3d(r * cos(i), 0, r * sin(i));
-      const float tc = ( i / (float)( 2 * PI ) * h);
-      glTexCoord2f(tc, -1.0 );
+      const float tc = ( i / (float)( 2 * PI ));
+      glTexCoord2f(tc, - h * s);
       glVertex3f(r * cos(i), -h, r * sin(i));
-      glTexCoord2f( tc, 1.0 );
+      glTexCoord2f(tc,  h* s);
       glVertex3f(r * cos(i), h, r * sin(i));
     }
   glEnd();
@@ -254,19 +254,22 @@ static void DrawCylinder(double x,double y,double z, double delta_h, double s){
         glVertex3f(r, h, 0);
     glEnd();
 
+    glNormal3d(0,-1,0); //reset normals
+
+
     /* bottom triangle: note: for is in reverse order */
     glBegin(GL_TRIANGLE_FAN);
         glTexCoord2f( 0.5, 0.5 );
-        glVertex3f(0, 0, 0);  /* center */
+        glVertex3f(0, -h, 0);  /* center */
         for (double i = 0; i <= 2 * PI; i += d)
         {
             glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
-            glVertex3f(r * cos(i), 0, r * sin(i));
+            glVertex3f(r * cos(i), -h, r * sin(i));
         }
     glEnd();
 
 
-    
+
   //Shoutout to the kind soul on StackOverflow who happened to have a texture map which worked PERFECTLY
   //with my implementation of the cylinder -- source: https://stackoverflow.com/questions/26536570/how-do-i-texture-a-cylinder-in-opengl-created-with-triangle-strip
 
@@ -369,7 +372,7 @@ void DrawSNES(double x, double y, double z, double s){
    glColor3f(0.541, 0.169, 0.886); //purp color
    glBindTexture(GL_TEXTURE_2D,texture[6]); //pattern
    cube(-0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
-   glBindTexture(GL_TEXTURE_2D,texture[8]); //pattern
+   glBindTexture(GL_TEXTURE_2D,texture[6]); //pattern
    cube(0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
 
 
@@ -422,10 +425,11 @@ static void SnesController(double x,double y,double z, double th, double ph, dou
   //cubeoid for center
   glColor3f(0.8,0.8,0.8); //center grey color
 
-  glBindTexture(GL_TEXTURE_2D,texture[2]); //pattern
+  glBindTexture(GL_TEXTURE_2D,texture[8]); //pattern
   cube(0,0,0,  1.3,0.2,0.7, 0);
 
   //left/right sides of controller with cylinders
+  glBindTexture(GL_TEXTURE_2D,texture[2]); //pattern
   DrawCylinder(-1.4,0,0.2, 0, 1);
   DrawCylinder(1.4,0,0.2, 0, 1);
 
@@ -793,7 +797,7 @@ int main(int argc,char* argv[])
    texture[5] = LoadTexBMP("metal.bmp"); //metal
    texture[6] = LoadTexBMP("power_buttons.bmp"); //power buttons
    texture[7] = LoadTexBMP("purple90s.bmp"); //synhwavey texture
-   texture[8] = LoadTexBMP("reset_buttons.bmp"); //synhwavey texture
+   texture[8] = LoadTexBMP("jazzy.bmp"); //synhwavey texture
 
 
    //  Pass control to GLUT so it can interact with the user
