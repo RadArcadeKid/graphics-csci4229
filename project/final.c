@@ -58,7 +58,7 @@ int zh        =  90;  // Light azimuth
 float ylight  =   1;  // Elevation of light
 
 //Texture array:
-unsigned int texture[9]; // Texture names
+unsigned int texture[8]; // Texture names
 
 
 typedef struct {float x,y,z;} vtx;
@@ -780,17 +780,15 @@ int main(int argc,char* argv[])
    glutIdleFunc(idle);
 
    //  Load textures
-   //TODO: find textures 
-   // texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
-   // //texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
-   // texture[1] = LoadTexBMP("90s_pattern.bmp"); //light 90s texture
-   // texture[2] = LoadTexBMP("90s_pattern_2.bmp"); //pink 90s texture
-   // texture[3] = LoadTexBMP("carpet.bmp"); //carpet
-   // texture[4] = LoadTexBMP("controllerport.bmp"); //controller port texture
-   // texture[5] = LoadTexBMP("metal.bmp"); //metal
-   // texture[6] = LoadTexBMP("power_buttons.bmp"); //power buttons
-   // texture[7] = LoadTexBMP("purple90s.bmp"); //synhwavey texture
-   // texture[8] = LoadTexBMP("jazzy.bmp"); //synhwavey texture
+   texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
+   texture[1] = LoadTexBMP("checker.bmp");
+   texture[2] = LoadTexBMP("concrete.bmp");
+   texture[3] = LoadTexBMP("error_1.bmp");
+   texture[4] = LoadTexBMP("error_2.bmp");
+   texture[5] = LoadTexBMP("palm_bark.bmp");
+   texture[6] = LoadTexBMP("palm.bmp");
+   texture[7] = LoadTexBMP("placeholder_water.bmp");
+   //TODO: find more textures
 
 
    //  Pass control to GLUT so it can interact with the user
