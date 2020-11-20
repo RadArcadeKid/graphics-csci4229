@@ -34,7 +34,7 @@
 
 int axes=0;       //  Display axes start with off
 int mode=1;       //  Projection mode
-int th=-40;         //  Azimuth of view angle
+int th=0;         //  Azimuth of view angle
 int ph=30;         //  Elevation of view angle
 int move = 1;      //move light
 int fov=55;       //  Field of view (for perspective)
@@ -60,10 +60,13 @@ float ylight  =   1;  // Elevation of light
 int ball_ph = 0;
 int ball_th = 0;
 
+int forward, sideways = 0;
+
 double ball_x, ball_z = 0.0;
 
 //Texture array:
 unsigned int texture[8]; // Texture names
+unsigned int water_texture[7]; // water textures
 
 
 typedef struct {float x,y,z;} vtx;
@@ -97,8 +100,14 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
    //  Set texture
    glPushMatrix();
    glTranslated(x,y,z);
-   glRotated(ph,1,0,0);
-   glRotated(th,0,0,1);
+   if(forward){ //running into issues with glPopMatrix so I just added a bool here instead
+      glRotated(ph,1,0,0);
+      glRotated(th,0,0,1);
+    }
+   else if(sideways){
+      glRotated(th,0,0,1);
+      glRotated(ph,1,0,0);
+    }
 
 
    glScaled(s,s,s);
@@ -317,6 +326,32 @@ static void Ground(double x, double y, double z, double s){
   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
   glBindTexture(GL_TEXTURE_2D,texture[1]); //carpet
   glBegin(GL_QUADS);
+  glColor3f(0.933, 0.510, 0.933);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
+static void Water(double x, double y, double z, double s){
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glScaled(s,s,s);
+
+
+  double gridsize = s;
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[7]); //TODO: animated water
+  glBegin(GL_QUADS);
   glColor3f(0.125, 0.698, 0.667);
   glNormal3f( 0,+1, 0);
   glTexCoord2f(0,0); glVertex3f(-1,0,+1);
@@ -327,6 +362,24 @@ static void Ground(double x, double y, double z, double s){
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
 }
+
+void DrawWaterFloor(){
+  glPushMatrix();
+  int gridsize = 10;
+  glTranslated(0, -2, 0);
+  glScaled(2, 0, 2);
+
+
+  for(int i = -gridsize; i < gridsize; i+=2){
+    for(int j = -gridsize; j < gridsize; j+=2){
+      Water(i, 0, 0, 1);
+      Water(i, 0, j, 1);
+      Water(0, 0, j, 1);
+    }
+  }
+  glPopMatrix();
+}
+
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -349,22 +402,12 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective - set eye position
-   if (mode) //REMOVE THIS
-   {
-      double Ex = -2*dim*Sin(th)*Cos(ph);
-      double Ey = +2*dim        *Sin(ph);
-      double Ez = +2*dim*Cos(th)*Cos(ph);
-      //gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
-      Print("Ex, Ez=%f,%f  ", Ex,Ez);
-      gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
-
-   }
-   //  Orthogonal - set world orientation
-   else //TODO: REMOVE ORTHO PERSPECTIVE
-   {
-      glRotatef(ph,1,0,0);
-      glRotatef(th,0,1,0);
-   }
+   double Ex = -2*dim*Sin(th)*Cos(ph);
+   double Ey = +2*dim        *Sin(ph);
+   double Ez = +2*dim*Cos(th)*Cos(ph);
+   //gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+   Print("Ex, Ez=%f,%f  ", Ex,Ez);
+   gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
 
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
@@ -402,14 +445,19 @@ void display()
    //Display ground
    Ground(0, 0,0, 1);
    Ground(0, 0,-2, 1);
+   Ground(-2, 0,-2, 1);
+   Ground(-4, 0,-2, 1);
+
+   DrawWaterFloor();
 
 
-   DrawMarble(ball_x,0.3,ball_z,  0.3, ball_th, ball_ph);
+
+   DrawMarble(ball_x,0.3,ball_z,     0.3, ball_th, ball_ph);
 
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
    glColor3f(1,1,1);
-   if (axes)
+   if (axes) //TODO: remove axes
    {
       glBegin(GL_LINES);
       glVertex3d(0.0,0.0,0.0);
@@ -557,22 +605,30 @@ void key(unsigned char ch,int x,int y)
 
   ////MARBLE MOVEMENT:
   int speed = 10;
-  double movement = 0.04;
+  double movement = 0.05;
   if (ch == 'w'){ //FORWARD
      ball_ph -= speed;
      ball_z -= movement;
+     forward = 1;
+     sideways = 0;
   }
   else if (ch == 's'){ //BACKWARD
      ball_ph += speed;
      ball_z += movement;
+     forward = 1;
+     sideways = 0;
   }
   else if (ch == 'a'){ //LEFT
      ball_th += speed;
      ball_x -= movement;
+     forward = 0;
+     sideways = 1;
   }
   else if (ch == 'd'){ //RIGHT
      ball_th -= speed;
      ball_x += movement;
+     forward = 0;
+     sideways = 1;
   }
 
 
