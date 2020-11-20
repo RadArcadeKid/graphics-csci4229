@@ -5,7 +5,6 @@
  *
  * A program demonstrating my ability to light a scene with custom objects
  *  Key bindings
- *  l          Toggles lighting
 *   a/A        Decrease/increase ambient light
 *   d/D        Decrease/increase diffuse light
 *   s/S        Decrease/increase specular light
@@ -42,20 +41,26 @@ int fov=55;       //  Field of view (for perspective)
 double asp=1;     //  Aspect ratio
 double dim=3;     //  Size of world
 // Light values
-int light     =   1;  // Lighting
 int one       =   1;  // Unit value
 int distance  =   5;  // Light distance
 int inc       =  10;  // Ball increment
 int smooth    =   1;  // Smooth/Flat shading
 int local     =   0;  // Local Viewer Model
 int emission  =   0;  // Emission intensity (%)
-int ambient   =  10;  // Ambient intensity (%)
+int ambient   =  20;  // Ambient intensity (%)
 int diffuse   =  50;  // Diffuse intensity (%)
 int specular  =   0;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   1;  // Elevation of light
+
+
+
+int ball_ph = 0;
+int ball_th = 0;
+
+double ball_x, ball_z = 0.0;
 
 //Texture array:
 unsigned int texture[8]; // Texture names
@@ -65,6 +70,57 @@ typedef struct {float x,y,z;} vtx;
 typedef struct {int A,B,C;} tri;
 #define n 500
 vtx is[n];
+
+/*
+ *  Draw vertex in polar coordinates
+ */
+static void Vertex(int th,int ph)
+{
+   double x = Cos(th)*Cos(ph);
+   double y = Sin(th)*Cos(ph);
+   double z =         Sin(ph);
+   glNormal3d(x,y,z);
+   glTexCoord2d(th/360.0,ph/180.0+0.5); //TODO: FIX TEXTURE
+
+   glVertex3d(x,y,z);
+}
+
+/*
+ *  Draw marble
+ */
+void DrawMarble(double x,double y,double z, double s, double th, double ph)
+{
+
+   /*
+    *  Draw surface of the planet
+    */
+   //  Set texture
+   glPushMatrix();
+   glTranslated(x,y,z);
+   glRotated(ph,1,0,0);
+   glRotated(th,0,0,1);
+
+
+   glScaled(s,s,s);
+
+   glEnable(GL_TEXTURE_2D);
+   glBindTexture(GL_TEXTURE_2D,texture[0]); //flashy 90s pattern
+   //  Latitude bands
+   glColor3f(1,1,1);
+   for (ph=-90;ph<90;ph+=5)
+   {
+      glBegin(GL_QUAD_STRIP);
+      for (th=0;th<=360;th+=5)
+      {
+         Vertex(th,ph);
+         Vertex(th,ph+5);
+      }
+      glEnd();
+   }
+   glDisable(GL_TEXTURE_2D);
+
+   glPopMatrix();
+}
 
 /*
  *  Draw a cube
@@ -137,31 +193,6 @@ static void cube(double x,double y,double z,
    glEnd();
    //  Undo transofrmations
    glPopMatrix();
-}
-
-
-//  Vertex coordinates
-const vtx xyz[] =
-   {
-      { 0.000, 0.000, 1.000}, { 0.894, 0.000, 0.447}, { 0.276, 0.851, 0.447},
-      {-0.724, 0.526, 0.447}, {-0.724,-0.526, 0.447}, { 0.276,-0.851, 0.447},
-      { 0.724, 0.526,-0.447}, {-0.276, 0.851,-0.447}, {-0.894, 0.000,-0.447},
-      {-0.276,-0.851,-0.447}, { 0.724,-0.526,-0.447}, { 0.000, 0.000,-1.000}
-   };
-
-
-/*
- *  Draw vertex in polar coordinates with normal
- */
-static void Vertex(double th,double ph)
-{
-   double x = Sin(th)*Cos(ph);
-   double y = Cos(th)*Cos(ph);
-   double z =         Sin(ph);
-   //  For a sphere at the origin, the position
-   //  and normal vectors are the same
-   glNormal3d(x,y,z);
-   glVertex3d(x,y,z);
 }
 
 //TODO: remove ball from source code
@@ -277,204 +308,38 @@ static void Ground(double x, double y, double z, double s){
   glTranslated(x,y,z);
   glScaled(s,s,s);
 
-  double carpet_size = 1.5;
+
+  double gridsize = s;
 
   //  Enable textures
   glEnable(GL_TEXTURE_2D);
   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-  glColor3f(0.8, 0.8, 0.8);
-  glBindTexture(GL_TEXTURE_2D,texture[3]); //carpet
+  glBindTexture(GL_TEXTURE_2D,texture[1]); //carpet
   glBegin(GL_QUADS);
   glColor3f(0.125, 0.698, 0.667);
   glNormal3f( 0,+1, 0);
   glTexCoord2f(0,0); glVertex3f(-1,0,+1);
-  glTexCoord2f(carpet_size,0); glVertex3f(+1,0,+1);
-  glTexCoord2f(carpet_size,carpet_size); glVertex3f(+1,0,-1);
-  glTexCoord2f(0,carpet_size); glVertex3f(-1,0,-1);
+  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
   glEnd();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
 }
-
-// /*
-//  *
-//  *
-//  */
-// static void DrawDiagonalButton(double x, double y, double z, double s, double th, double ph){
-//   //DRAW A DIAGONAL BUTTON AT THE REQUESTED PLACE
-//   //Useful for the select/start buttons and intends on the controller
-//
-//   //  Save transformation
-//   glPushMatrix();
-//
-//   //  Offset, scale and rotate
-//   glTranslated(x,y,z);
-//   glRotated(th,0,1,0);
-//   glRotated(ph,1,0,0);
-//   glScaled(0.3*s, 0.3*s, 0.3*s);
-//
-//   //cubeoid for center
-//   cube(0,0,0 ,1.2,0.2,0.9, 0);
-//
-//   //left/right sides of controller with cylinders
-//   DrawCylinder(-1.2,0,0, 0, 1);
-//   DrawCylinder(1.2,0,0, 0, 1);
-//
-//   glPopMatrix();
-// }
-
-/*
- *
- * Draw an SNES console!
- * I know the instructions say not to make an object entirely of cubes, but 90% of the SNES is ostensably cubes
- * I did my best to mix it up and show that I can create complex objects and not make this lazy
- */
-// void DrawSNES(double x, double y, double z, double s){
-//
-//    glPushMatrix();
-//    glTranslated(x,y,z);
-//    glScaled(s,s,s);
-//
-//    //Draw base
-//    glColor3f(0.4, 0.4, 0.4); //button grey color
-//
-//    glEnable(GL_TEXTURE_2D);
-//    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-//    glBindTexture(GL_TEXTURE_2D,texture[5]); //metal bottom
-//    cube(0,-0.3,0 ,1,0.2,1, 0);
-//
-//
-//    glBindTexture(GL_TEXTURE_2D,texture[2]); //pattern
-//    glColor3f(0.72,0.72,0.72); //slightly darker center grey color
-//    cube(0,-0.25,0 , 1.07, 0.1, 1.07, 0);
-//
-//    glColor3f(0.8,0.8,0.8); //primary body  grey color
-//    cube(0, -0.02,0 , 1.07, 0.1, 1.07, 0);
-//
-//    //controller stocks
-//    cube(-0.5, -0.1, 0.1,   0.2, 0.25, 1.07, 0);
-//    cube(0.5, -0.1, 0.1,   0.2, 0.25, 1.07, 0);
-//
-//    //backside
-//    cube(0, 0.1, -0.55,       1.07, 0.08, 0.52, 0);
-//
-//
-//    //top buttons
-//    glColor3f(0.541, 0.169, 0.886); //purp color
-//    glBindTexture(GL_TEXTURE_2D,texture[6]); //pattern
-//    cube(-0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
-//    glBindTexture(GL_TEXTURE_2D,texture[6]); //pattern
-//    cube(0.5, -0.1, 0.3,   0.25, 0.3, 0.1, 0);
-//
-//
-//    //front controller ports
-//    glColor3f(0.5, 0.5, 0.5); //button grey color
-//    glScaled(s, 0.8 *s, s); //lazy way to rescale button cause I don't feel like adding more parameters for every call
-//    glBindTexture(GL_TEXTURE_2D,texture[4]); //pattern
-//    DrawDiagonalButton(-0.5, -0.15, 1.2, 0.26, 0, 90);
-//    DrawDiagonalButton(0.5, -0.15, 1.2, 0.26, 0, 90);
-//
-//    //glScaled(s, s, s); //reset scale
-//
-//    //top bevel piece
-//    glRotated(180, 1, 1, 0);
-//    glColor3f(0.8,0.8,0.8); //primary body  grey color
-//    glBindTexture(GL_TEXTURE_2D,texture[7]); //pattern
-//    DrawCylinder(0,0,0.45, 2.4, 0.4);
-//
-//
-//    glPopMatrix();
-//    glDisable(GL_TEXTURE_2D);
-//
-// }
-
-
-/*
- *
- * SnesController - Draws a SnesController Object
- *
- *
- */
-// static void SnesController(double x,double y,double z, double th, double ph, double s){  //Display light properties
-//   //  Set specular color to white
-//   float white[] = {1,1,1,1};
-//   float black[] = {0,0,0,1};
-//   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-//   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-//   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
-//   //  Save transformation
-//   glPushMatrix();
-//   //  Offset, scale and rotate
-//   glTranslated(x,y,z);
-//   glRotated(th,0,1,0);
-//   glRotated(ph,1,0,0);
-//   glScaled(s,s,s);
-//   glEnable(GL_TEXTURE_2D);
-//   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-//
-//
-//   //cubeoid for center
-//   glColor3f(0.8,0.8,0.8); //center grey color
-//
-//   glBindTexture(GL_TEXTURE_2D,texture[8]); //pattern
-//   cube(0,0,0,  1.3,0.2,0.7, 0);
-//
-//   //left/right sides of controller with cylinders
-//   glBindTexture(GL_TEXTURE_2D,texture[2]); //pattern
-//   DrawCylinder(-1.4,0,0.2, 0, 1);
-//   DrawCylinder(1.4,0,0.2, 0, 1);
-//
-//   //shoulder buttons:
-//   glBindTexture(GL_TEXTURE_2D,texture[7]); //pattern
-//   DrawDiagonalButton(1.23, 0, -0.5, 1, 0, 0);
-//   DrawDiagonalButton(-1.23, 0, -0.5, 1, 0, 0);
-//
-//
-//
-//   //inner circle on right side
-//   glBindTexture(GL_TEXTURE_2D,texture[1]); //pattern
-//   glColor3f(0.6, 0.6, 0.6); //button grey color
-//   DrawCylinder(1.4, 0.04, 0.2, 0, 0.85); //inner circle for buttons
-//
-//
-//   //button different color intents (right side)
-//   glColor3f(0.8,0.8,0.8); //center grey color, inner things
-//   DrawDiagonalButton(1.25,0.2, 0.0, 0.7, 45, 0);
-//   DrawDiagonalButton(1.6,0.2,0.4, 0.7, 45, 0);
-//
-//
-//   //select/start buttons
-//   glColor3f(0.4, 0.4, 0.4); //button grey color
-//   DrawDiagonalButton(0.25,0.3,0.25, 0.3, 45, 0);
-//   DrawDiagonalButton(-0.26,0.3,0.25, 0.3,45, 0);
-//
-//   //cross button
-//   cube(-1.45, 0.2, 0.2,   0.33, 0.1, 0.1,   0);
-//   cube(-1.45, 0.2, 0.2,   0.33, 0.1, 0.1,  90);
-//
-//
-//   //all 4 face buttons
-//   glColor3f(0.541, 0.169, 0.886); //purp color
-//   DrawCylinder(1.43, 0.25, 0.55, 0.3, 0.18);
-//   DrawCylinder(1.77, 0.25, 0.23, 0.3, 0.18);
-//
-//   glColor3f(0.933, 0.510, 0.933); //pink color
-//   DrawCylinder(1.08, 0.25, 0.19, 0.3, 0.18);
-//   DrawCylinder(1.42, 0.25, -0.192, 0.3, 0.18);
-//
-//   glPopMatrix();
-//   glDisable(GL_TEXTURE_2D);
-// }
-
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
 void display()
 {
-   glClearColor(0.1, 0, 0.1, 1.0f); //change background color
+   // glPushMatrix();
+   // glTranslated(ball_x, 0, ball_z);
+   // glPopMatrix();
 
+   //TODO: background image
+
+   //TODO: REMOVE AXES
    const double len=2.0;  //  Length of axes
    //  Erase the window and the depth buffer
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
@@ -484,15 +349,18 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective - set eye position
-   if (mode)
+   if (mode) //REMOVE THIS
    {
       double Ex = -2*dim*Sin(th)*Cos(ph);
       double Ey = +2*dim        *Sin(ph);
       double Ez = +2*dim*Cos(th)*Cos(ph);
-      gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+      //gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+      Print("Ex, Ez=%f,%f  ", Ex,Ez);
+      gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
+
    }
    //  Orthogonal - set world orientation
-   else
+   else //TODO: REMOVE ORTHO PERSPECTIVE
    {
       glRotatef(ph,1,0,0);
       glRotatef(th,0,1,0);
@@ -501,18 +369,17 @@ void display()
    //  Flat or smooth shading
    glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
 
-   //  Light switch
-   if (light)
-   {
       //  Translate intensity to color vectors
-      float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
+      float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0}; //todo: change these into normal value
       float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
       float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
       //  Light position
       float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
       //  Draw light position as ball (still no lighting here)
       glColor3f(1,1,1);
+      //ball(1, 1, 1, 0.1);
       ball(Position[0],Position[1],Position[2] , 0.1);
+
       //  OpenGL should normalize normal vectors
       glEnable(GL_NORMALIZE);
       //  Enable lighting
@@ -529,22 +396,15 @@ void display()
       glLightfv(GL_LIGHT0,GL_DIFFUSE ,Diffuse);
       glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
-   }
-   else
-      glDisable(GL_LIGHTING);
 
    //Display objects!!
 
    //Display ground
-   Ground(0,-0.5,0, 3);
+   Ground(0, 0,0, 1);
+   Ground(0, 0,-2, 1);
 
-   // //Display Snes
-   // DrawSNES(0,0,0, 1);
-   //
-   // //Display SNES controllers
-   // SnesController(1.5,0,1, 45, 45, 0.4);
-   // SnesController(-1.5, 1.3, 0.75, -45, 45, 0.5);
 
+   DrawMarble(ball_x,0.3,ball_z,  0.3, ball_th, ball_ph);
 
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
@@ -568,19 +428,19 @@ void display()
       Print("Z");
    }
 
-   //  Display parameters
-   glWindowPos2i(5,5);
-   Print("Angle=%d,%d  FOV=%d Projection=%s Light=%s",
-     th,ph,fov,mode?"Perpective":"Orthogonal",light?"On":"Off");
-   if (light)
-   {
-      glWindowPos2i(5,45);
-      Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
-      glWindowPos2i(5,25);
-      Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shiny);
-      Print("ylight = %d", ylight);
-
-   }
+   //  Display parameters //TODO: REMOVE ME
+    glWindowPos2i(5,5);
+   // Print("Angle=%d,%d  FOV=%d Projection=%s Light=%s",
+   //   th,ph,fov,mode?"Perpective":"Orthogonal",light?"On":"Off");
+   // if (light)
+   // {
+   //    glWindowPos2i(5,45);
+   //    Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
+   //    glWindowPos2i(5,25);
+   //    Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shiny);
+   //    Print("ylight = %d", ylight);
+   //
+   // }
 
 
    //  Render the scene and make it visible
@@ -658,42 +518,62 @@ void key(unsigned char ch,int x,int y)
    //  Toggle axes
    else if (ch == 'x' || ch == 'X')
       axes = 1-axes;
-   //  Toggle lighting
-   else if (ch == 'l' || ch == 'L')
-      light = 1-light;
    //  Switch projection mode
-   else if (ch == 'p' || ch == 'P')
+   else if (ch == 'p' || ch == 'P') //REMOVE PROJECTION MODE SWITCH
       mode = 1-mode;
-   //  Ambient level
-   else if (ch=='a' && ambient>0)
-      ambient -= 5;
-   else if (ch=='A' && ambient<100)
-      ambient += 5;
+   // //  Ambient level
+   // else if (ch=='3' && ambient>0) //TODO: MAYBE PLAY WITH AMBIENT LIGHT A BIT??
+   //    ambient -= 5;
+   // else if (ch=='4' && ambient<100)
+   //    ambient += 5;
    //  Diffuse level
-   else if (ch=='d' && diffuse>0)
+   else if (ch=='v' && diffuse>0)
       diffuse -= 5;
-   else if (ch=='D' && diffuse<100)
+   else if (ch=='V' && diffuse<100)
       diffuse += 5;
    //  Move light
-   else if (ch == ']')
+   else if (ch == '+')
       zh += 1;
-   else if (ch == '[')
+   else if (ch == '-')
       zh -= 1;
    // light height
-   else if (ch == 'H')
+   else if (ch == 'H') //REMOVE ME
       ylight += 0.5;
    else if (ch == 'h')
       ylight -= 0.5;
   // lfov
-  else if (ch == '+')
+  else if (ch == ']')
       fov += 1;
-  else if (ch == '-')
+  else if (ch == '[')
       fov -= 1;
 
   //  Toggle light movement
-  else if (ch == 'm' || ch == 'M')
+  else if (ch == 'm' || ch == 'M') //REMOVE ME
       move = 1-move;
 
+
+  ball_th %= 360;
+  ball_ph %= 360;
+
+  ////MARBLE MOVEMENT:
+  int speed = 10;
+  double movement = 0.04;
+  if (ch == 'w'){ //FORWARD
+     ball_ph -= speed;
+     ball_z -= movement;
+  }
+  else if (ch == 's'){ //BACKWARD
+     ball_ph += speed;
+     ball_z += movement;
+  }
+  else if (ch == 'a'){ //LEFT
+     ball_th += speed;
+     ball_x -= movement;
+  }
+  else if (ch == 'd'){ //RIGHT
+     ball_th -= speed;
+     ball_x += movement;
+  }
 
 
    //  Specular level
@@ -780,7 +660,7 @@ int main(int argc,char* argv[])
    glutIdleFunc(idle);
 
    //  Load textures
-   texture[0] = LoadTexBMP("90s_2.bmp"); //flashy 90s texture
+   texture[0] = LoadTexBMP("90s_2_sphere.bmp"); //flashy 90s texture
    texture[1] = LoadTexBMP("checker.bmp");
    texture[2] = LoadTexBMP("concrete.bmp");
    texture[3] = LoadTexBMP("error_1.bmp");
