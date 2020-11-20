@@ -55,8 +55,6 @@ float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   1;  // Elevation of light
 
-
-
 int ball_ph = 0;
 int ball_th = 0;
 
@@ -67,6 +65,9 @@ double ball_x, ball_z = 0.0;
 //Texture array:
 unsigned int texture[8]; // Texture names
 unsigned int water_texture[7]; // water textures
+
+int speed = 12;
+double movement = 0.07;
 
 
 typedef struct {float x,y,z;} vtx;
@@ -337,20 +338,19 @@ static void Ground(double x, double y, double z, double s){
   glPopMatrix();
 }
 
-static void Water(double x, double y, double z, double s){
+static void Water(double x, double y, double z, int ct){
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
-  glScaled(s,s,s);
+  glScaled(1,1,1);
 
 
-  double gridsize = s;
+  double gridsize = 1;
 
   //  Enable textures
   glEnable(GL_TEXTURE_2D);
   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D,texture[7]); //TODO: animated water
+  glBindTexture(GL_TEXTURE_2D, water_texture[ct]); //TODO: animated water
   glBegin(GL_QUADS);
   glColor3f(0.125, 0.698, 0.667);
   glNormal3f( 0,+1, 0);
@@ -365,21 +365,29 @@ static void Water(double x, double y, double z, double s){
 
 void DrawWaterFloor(){
   glPushMatrix();
-  int gridsize = 10;
-  glTranslated(0, -2, 0);
+  int gridsize = 12;
+  glTranslated(0, -6, 0);
   glScaled(2, 0, 2);
 
+  int ct = zh / 30;
+  ct %= 7;
 
   for(int i = -gridsize; i < gridsize; i+=2){
     for(int j = -gridsize; j < gridsize; j+=2){
-      Water(i, 0, 0, 1);
-      Water(i, 0, j, 1);
-      Water(0, 0, j, 1);
+      Water(i, 0, 0, ct);
+      Water(i, 0, j, ct);
+      Water(0, 0, j, ct);
     }
   }
   glPopMatrix();
 }
 
+void Reset(){
+  th = 0;
+  ph = 30;
+  ball_x = 0;
+  ball_z = 0;
+}
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -406,7 +414,7 @@ void display()
    double Ey = +2*dim        *Sin(ph);
    double Ez = +2*dim*Cos(th)*Cos(ph);
    //gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
-   Print("Ex, Ez=%f,%f  ", Ex,Ez);
+   Print("Ex, Ez=%f,%f,", Ex,Ez);
    gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
 
    //  Flat or smooth shading
@@ -443,13 +451,21 @@ void display()
    //Display objects!!
 
    //Display ground
+
+   DrawWaterFloor();
+
+
+   //Instead of declaring these as objects, perhaps use an array
+   //With given bounds, and then create those objects relative to the array
    Ground(0, 0,0, 1);
    Ground(0, 0,-2, 1);
    Ground(-2, 0,-2, 1);
    Ground(-4, 0,-2, 1);
 
-   DrawWaterFloor();
-
+   Print("Ball_x, %f", ball_x);
+   if(ball_x < -4.5){ //TODO: TURN THIS INTO A TRIGGER
+     Reset();
+   }
 
 
    DrawMarble(ball_x,0.3,ball_z,     0.3, ball_th, ball_ph);
@@ -503,8 +519,9 @@ void display()
 void idle()
 {
    //  Elapsed time in seconds
-   double t = glutGet(GLUT_ELAPSED_TIME)/1000.0;
-   zh = fmod(90*t,360.0);
+   double time = glutGet(GLUT_ELAPSED_TIME)/1000.0;
+   zh = fmod(90*time,360.0);
+
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -604,8 +621,6 @@ void key(unsigned char ch,int x,int y)
   ball_ph %= 360;
 
   ////MARBLE MOVEMENT:
-  int speed = 10;
-  double movement = 0.05;
   if (ch == 'w'){ //FORWARD
      ball_ph -= speed;
      ball_z -= movement;
@@ -706,7 +721,7 @@ int main(int argc,char* argv[])
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    glutInitWindowSize(600,600);
-   glutCreateWindow("HW6: Textures, Jake Henson");
+   glutCreateWindow("Final Project, Jake Henson");
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
@@ -723,9 +738,14 @@ int main(int argc,char* argv[])
    texture[4] = LoadTexBMP("error_2.bmp");
    texture[5] = LoadTexBMP("palm_bark.bmp");
    texture[6] = LoadTexBMP("palm.bmp");
-   texture[7] = LoadTexBMP("placeholder_water.bmp");
-   //TODO: find more textures
 
+   water_texture[0] = LoadTexBMP("water2.bmp");
+   water_texture[1] = LoadTexBMP("water3.bmp");
+   water_texture[2] = LoadTexBMP("water4.bmp");
+   water_texture[3] = LoadTexBMP("water5.bmp");
+   water_texture[4] = LoadTexBMP("water6.bmp");
+   water_texture[5] = LoadTexBMP("water7.bmp");
+   water_texture[6] = LoadTexBMP("water8.bmp");
 
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
