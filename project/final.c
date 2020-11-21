@@ -54,6 +54,9 @@ int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
 float ylight  =   1;  // Elevation of light
+float zoom = 2.0;
+
+
 
 int ball_ph = 0;
 int ball_th = 0;
@@ -152,14 +155,7 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
  */
 static void cube(double x,double y,double z,
                  double dx,double dy,double dz,
-                 double th) //todo -- add
-{
-   //  Set specular color to white
-   float white[] = {1,1,1,1};
-   float black[] = {0,0,0,1};
-   glMaterialf(GL_FRONT_AND_BACK,GL_SHININESS,shiny);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,white);
-   glMaterialfv(GL_FRONT_AND_BACK,GL_EMISSION,black);
+                 double th){
    //  Save transformation
    glPushMatrix();
    //  Offset, scale and rotate
@@ -217,7 +213,7 @@ static void cube(double x,double y,double z,
    glPopMatrix();
 }
 
-//TODO: remove ball from source code
+//TODO: remove ball?
 /*
  *  Draw a ball
  *     at (x,y,z)
@@ -255,11 +251,10 @@ static void ball(double x,double y,double z,double r)
 
 
 /*
- *  DrawCyliner - useful for sides of controller + buttons
- *  h == height; r == radius
+ *  DrawTeaCan - draws an Arizona tea can
  */
 static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
-  const double d=0.05;
+  const double d=0.25;
   float r = 0.4;
   //double h = 0.201 + delta_h;
   double h = delta_h;
@@ -269,7 +264,7 @@ static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
-  float sm = 0.7;
+  float sm = 0.72;
   glScaled(sm*s, sm*s, sm*s);
   glRotated(10, 0, 0, 1);
 
@@ -336,6 +331,44 @@ static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
   glPopMatrix();
 }
 
+
+
+/*
+ *  DrawPillarTube - draws the pillar tube for the pillar
+ */
+static void DrawPillarTube(double x,double y,double z, double h, double s){
+  const double d=0.30;
+
+  float r = 0.7;
+
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+
+  //draw sides of cylinder
+  glBegin(GL_QUAD_STRIP);
+  //glNormal3d(0.0, h, 0.0);
+    for(float i = 0; i <= 2.1*PI; i+=d){
+      glNormal3d(r * cos(i), 0, r * sin(i));
+      const float tc = ( i / (float)( 2 * PI ));
+      glTexCoord2f(2*tc, 0);
+
+      glVertex3f(r * cos(i), -h, r * sin(i));
+      glTexCoord2f(2*tc, h*s);
+
+      glVertex3f(r * cos(i), h, r * sin(i));
+    }
+  glEnd();
+
+  //  Undo transformations
+  glPopMatrix();
+}
+
+
+/*
+ * Ground - draws the track
+ */
 static void Ground(double x, double y, double z, double s){
   glPushMatrix();
   //  Offset, scale and rotate
@@ -361,6 +394,9 @@ static void Ground(double x, double y, double z, double s){
   glPopMatrix();
 }
 
+ /*
+  * Water - draws the animated water
+  */
 static void Water(double x, double y, double z, int ct){
   int s = 2;
   glPushMatrix();
@@ -392,7 +428,7 @@ static void Water(double x, double y, double z, int ct){
  */
 void DrawWaterFloor(){
   glPushMatrix();
-  int gridsize = 8;
+  int gridsize = 10;
   glTranslated(0, -6, 0);
   glScaled(2, 0, 2);
 
@@ -401,9 +437,7 @@ void DrawWaterFloor(){
 
   for(int i = -gridsize; i < gridsize; i+=2){
     for(int j = -gridsize; j < gridsize; j+=2){
-      Water(i, 0, 0, ct);
       Water(i, 0, j, ct);
-      Water(0, 0, j, ct);
     }
   }
   glPopMatrix();
@@ -429,17 +463,21 @@ void Reset(){
   ball_z = 0;
 }
 
-
+/*
+ * Will Draw collectabless based on if they've been picked up or not
+ */
 void DrawCollectables(){
   for(int i = 0; i < numcans; i++){
       if(collected_cans[i] == 0){ //if the can has NOT been collected
-        Print("  i=%d", i);
         SetFloatingCan(cans_x[i], 0.0, cans_z[i]); //draw the can
       }
   }
 }
 
-
+/*
+ * Will determine whether the player has picked up a can
+ * Called when the marble moves!
+ */
 void CheckPickup(){
   float range = 0.25;
 
@@ -452,6 +490,37 @@ void CheckPickup(){
       }
     }
   }
+}
+
+/*
+ * Draws a concrete pillar
+ *
+ */
+void DrawPillar(double x, double y, double z, double h){
+    //add concrete texture
+    glPushMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    glBindTexture(GL_TEXTURE_2D,texture[2]); //concrete!
+    glColor3f(1.0, 1.0, 1.0);
+    float scale = 0.3;
+    glTranslated(x, y+0.04, z);
+    glScalef(scale, scale, scale);
+
+
+
+    cube(x, y, z, 1, 0.1, 1, 0.0);
+    cube(x, y+0.17, z, 0.8, 0.1, 0.8, 0.0);
+
+    DrawPillarTube(x, y+(h/2), z, (h/2), 1.0);
+
+
+    cube(x, y+h, z, 0.8, 0.1, 0.8, 0.0);
+    cube(x, y+h+0.17, z, 1, 0.1, 1, 0.0);
+
+
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
 }
 
 /*
@@ -475,10 +544,9 @@ void display()
    //  Undo previous transformations
    glLoadIdentity();
    //  Perspective - set eye position
-   double Ex = -2*dim*Sin(th)*Cos(ph);
-   double Ey = +2*dim        *Sin(ph);
-   double Ez = +2*dim*Cos(th)*Cos(ph);
-   //gluLookAt(Ex,Ey,Ez , 0,0,0 , 0,Cos(ph),0);
+   double Ex = -zoom*dim*Sin(th)*Cos(ph);
+   double Ey = +zoom*dim        *Sin(ph);
+   double Ez = +zoom*dim*Cos(th)*Cos(ph);
    Print("Ex, Ez=%f,%f,", Ex,Ez);
    gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
 
@@ -513,8 +581,6 @@ void display()
       glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
 
-   //Display objects!!
-
    //Display ground
 
    DrawWaterFloor();
@@ -528,6 +594,9 @@ void display()
    Ground(-4, 0,-2, 1);
    Ground(-4, 0,-4, 1);
 
+
+   //Draw objects
+   DrawPillar(-1,0,-0.8,    4.0);
 
 
     //TODO: TURN ME INTO A GRID FUNCTION TO DETERMINE IF BALL IS OFFBASE
@@ -633,6 +702,7 @@ void special(int key,int x,int y)
    ph %= 360;
    //  Update projection
    Project(mode?fov:0,asp,dim);
+
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -650,10 +720,11 @@ void key(unsigned char ch,int x,int y)
       exit(0);
    //  Reset view angle
    else if (ch == '0'){
-      th = -35;
-      ph = 40;
+      th = 0;
+      ph = 30;
+      zoom = 2.0; //reset zoom too
   }
-   //  Toggle axes
+   //  Toggle axes //TODO: REMOVE ME
    else if (ch == 'x' || ch == 'X')
       axes = 1-axes;
    //  Switch projection mode
@@ -669,26 +740,33 @@ void key(unsigned char ch,int x,int y)
       diffuse -= 5;
    else if (ch=='V' && diffuse<100)
       diffuse += 5;
-   //  Move light
+   //  Move camera
    else if (ch == '+')
-      zh += 1;
+      zoom += 0.1;
    else if (ch == '-')
-      zh -= 1;
+      zoom -= 0.1;
    // light height
    else if (ch == 'H') //REMOVE ME
       ylight += 0.5;
    else if (ch == 'h')
       ylight -= 0.5;
-  // lfov
-  else if (ch == ']')
-      fov += 1;
-  else if (ch == '[')
-      fov -= 1;
+  // // lfov
+  // else if (ch == ']')
+  //     fov += 1;
+  // else if (ch == '[')
+  //     fov -= 1;
 
   //  Toggle light movement
   else if (ch == 'm' || ch == 'M') //REMOVE ME
       move = 1-move;
 
+  //reset zoom if needed
+  if(zoom < 0.8){
+    zoom =0.6;
+  }
+  if(zoom > 2.7){
+    zoom = 2.7;
+  }
 
   ball_th %= 360;
   ball_ph %= 360;
