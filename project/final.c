@@ -64,6 +64,7 @@ int ball_th = 0;
 int forward, sideways = 0;
 
 double ball_x, ball_z = 0.0;
+double ball_y = 0.2;
 
 //Texture array:
 unsigned int texture[9]; // Texture names
@@ -85,10 +86,30 @@ double cans_z[numcans] = {-2.0, -2.0, -4.0};
 
 
 
+#define numground 8
+
+//places to store the x and y coordinates of the ground
+double ground_x[numground] = {0, 0,-2,-4,-4, -4,-4,-4};
+double ground_z[numground] = {0,-2,-2,-2,-4, -6,-8,-10};
+
+
 typedef struct {float x,y,z;} vtx;
 typedef struct {int A,B,C;} tri;
 #define n 500
 vtx is[n];
+
+
+
+void Reset(){
+  th = 0;
+  ph = 30;
+  ball_x = 0;
+  ball_z = 0;
+  ball_y = 0.2;
+}
+
+
+
 
 /*
  *  Draw vertex in polar coordinates
@@ -103,6 +124,89 @@ static void Vertex(int th,int ph)
 
    glVertex3d(x,y,z);
 }
+
+
+/*
+ * Ground - draws the track
+ */
+static void Ground(double x, double y, double z, double s){
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glScaled(s,s,s);
+
+  double gridsize = s;
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[1]); //carpet
+  glBegin(GL_QUADS);
+  glColor3f(0.933, 0.510, 0.933);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
+ /*
+  * Water - draws the animated water
+  */
+static void Water(double x, double y, double z, int ct){
+  int s = 2;
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glScaled(s,s,s);
+
+
+  double gridsize = s;
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+  glBindTexture(GL_TEXTURE_2D, water_texture[ct]); //TODO: animated water
+  glBegin(GL_QUADS);
+  glColor3f(0.125, 0.698, 0.667);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
+/*
+ *
+ */
+static void DrawGround(){
+  for(int i = 0; i < numground; i++){
+    Ground(ground_x[i], 0, ground_z[i], 1);
+  }
+}
+
+
+// static void CheckGround(double ball_x, double ball_z){
+//   double range = 1;
+//   int isFalling = 0;
+//
+//   for(unsigned int i = 0; i < numground; i++){
+//     if(ball_x > ground_x[i]-range && ball_z > ground_z[i]-range){
+//         isFalling = 1;
+//     }
+//   }
+
+//   if(isFalling = 1){
+//     Print("OUTSIDE OF RANGE")
+//   }
+// }
 
 /*
  *  Draw marble
@@ -404,6 +508,9 @@ void DrawPlant(double x, double y, double z){
 }
 
 
+/*
+ * Draw computer 
+ */
 
 
 /*
@@ -522,64 +629,6 @@ static void DrawPillarTube(double x,double y,double z, double h, double s){
   glPopMatrix();
 }
 
-
-/*
- * Ground - draws the track
- */
-static void Ground(double x, double y, double z, double s){
-  glPushMatrix();
-  //  Offset, scale and rotate
-  glTranslated(x,y,z);
-  glScaled(s,s,s);
-
-  double gridsize = s;
-
-  //  Enable textures
-  glEnable(GL_TEXTURE_2D);
-  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D,texture[1]); //carpet
-  glBegin(GL_QUADS);
-  glColor3f(0.933, 0.510, 0.933);
-  glNormal3f( 0,+1, 0);
-  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
-  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
-  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
-  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);
-  glPopMatrix();
-}
-
- /*
-  * Water - draws the animated water
-  */
-static void Water(double x, double y, double z, int ct){
-  int s = 2;
-  glPushMatrix();
-  //  Offset, scale and rotate
-  glTranslated(x,y,z);
-  glScaled(s,s,s);
-
-
-  double gridsize = s;
-
-  //  Enable textures
-  glEnable(GL_TEXTURE_2D);
-  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-  glBindTexture(GL_TEXTURE_2D, water_texture[ct]); //TODO: animated water
-  glBegin(GL_QUADS);
-  glColor3f(0.125, 0.698, 0.667);
-  glNormal3f( 0,+1, 0);
-  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
-  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
-  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
-  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);
-  glPopMatrix();
-}
-
 /*
  * Draw the water floor!!
  */
@@ -611,13 +660,6 @@ void SetFloatingCan(double x, double y, double z){
   DrawTeaCan(0, 0.5+0.1*Sin(zh), 0,  1.0,  0.5);
 
   glPopMatrix();
-}
-
-void Reset(){
-  th = 0;
-  ph = 30;
-  ball_x = 0;
-  ball_z = 0;
 }
 
 /*
@@ -761,24 +803,12 @@ void display()
 
    //Instead of declaring these as objects, perhaps use an array
    //With given bounds, and then create those objects relative to the array
-   Ground(0, 0,0, 1);
-   Ground(0, 0,-2, 1);
-   Ground(-2, 0,-2, 1);
-   Ground(-4, 0,-2, 1);
-   Ground(-4, 0,-4, 1);
-   Ground(-4, 0,-6, 1);
-   Ground(-4, 0,-8, 1);
-   Ground(-4, 0,-10, 1);
+   DrawGround();
 
 
-
+   Print("ball_x, ball_z, %f, %f", ball_x, ball_z);
 
    DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
-    //TODO: TURN ME INTO A GRID FUNCTION TO DETERMINE IF BALL IS OFFBASE
-   Print("ball_x, ball_z = %f, %f", ball_x, ball_z); //TODO:REMOVE ME
-   if(ball_x < -5){ //TODO: TURN THIS INTO A TRIGGER
-     Reset();
-   }
 
    DrawCollectables();
 
@@ -899,7 +929,7 @@ void special(int key,int x,int y)
 void key(unsigned char ch,int x,int y)
 {
    CheckPickup(); //determine if the can was picked up
-
+   //CheckGround(ball_x, ball_z); //determine if ball is within the range of the ground
 
    //  Exit on ESC
    if (ch == 27)
