@@ -111,7 +111,7 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
 {
 
    /*
-    *  Draw surface of the planet
+    *  Draw surface of  marble
     */
    //  Set texture
    glPushMatrix();
@@ -264,7 +264,7 @@ static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
-  float sm = 0.72;
+  float sm = 0.8;
   glScaled(sm*s, sm*s, sm*s);
   glRotated(10, 0, 0, 1);
 
@@ -479,7 +479,7 @@ void DrawCollectables(){
  * Called when the marble moves!
  */
 void CheckPickup(){
-  float range = 0.25;
+  float range = 0.3;
 
   for(int i = 0; i < numcans; i++){
     //check if ball is within pickup range of can
@@ -504,7 +504,7 @@ void DrawPillar(double x, double y, double z, double h){
     glBindTexture(GL_TEXTURE_2D,texture[2]); //concrete!
     glColor3f(1.0, 1.0, 1.0);
     float scale = 0.3;
-    glTranslated(x, y+0.04, z);
+    glTranslated(x, y+0.02, z);
     glScalef(scale, scale, scale);
 
 
@@ -521,6 +521,46 @@ void DrawPillar(double x, double y, double z, double h){
 
     glDisable(GL_TEXTURE_2D);
     glPopMatrix();
+}
+
+
+void DrawLeaf(double x, double y, double z){
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y-2,z);
+  glScaled(0.5,0,1);
+
+  float tex_size = 1;
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[6]); //fern leaf
+  glBegin(GL_QUADS);
+  //glColor3f(0.933, 0.510, 0.933);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(tex_size,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(tex_size,tex_size); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,tex_size); glVertex3f(-1,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+
+}
+
+/*
+ *  Draws a fern object
+ */
+void DrawFern(double x, double y, double z){
+  glPushMatrix();
+
+  //draw leaves
+  glTranslated(x, y+0.02, z);
+  DrawLeaf(0, 0, 0);
+
+
+
+  glPopMatrix();
 }
 
 /*
@@ -595,19 +635,31 @@ void display()
    Ground(-4, 0,-4, 1);
 
 
-   //Draw objects
-   DrawPillar(-1,0,-0.8,    4.0);
 
-
+   DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
     //TODO: TURN ME INTO A GRID FUNCTION TO DETERMINE IF BALL IS OFFBASE
    Print("ball_x, ball_z = %f, %f", ball_x, ball_z); //TODO:REMOVE ME
-   if(ball_x < -4.5){ //TODO: TURN THIS INTO A TRIGGER
+   if(ball_x < -5){ //TODO: TURN THIS INTO A TRIGGER
      Reset();
    }
 
    DrawCollectables();
 
-   DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
+
+   double pilht = 4.0;
+
+   DrawPillar(0,0,0,  pilht); //REMOVE ME
+   DrawFern(0, pilht, 0);
+
+
+   //Draw objects
+   DrawPillar(-1,0,-0.6,   pilht);
+   DrawPillar(1,0,-0.6,   pilht);
+
+   DrawPillar(-4,0,-2.5,   pilht);
+   DrawPillar(-2.1,0,-2.5,   pilht);
+
+
 
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
