@@ -148,6 +148,75 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
 }
 
 /*
+ *  DrawFlowerpot - draws an Arizona tea can
+ */
+static void DrawFlowerpot(double x,double y,double z, double delta_h, double s){
+  const double d=0.25;
+  float r = 0.45;
+  //double h = 0.201 + delta_h;
+  double h = delta_h;
+
+
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y-0.1,z);
+  float sm = 0.8;
+  glScaled(sm*s, sm*s, sm*s);
+
+  glColor3f(0.2, 0.749, 0.740);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[2]); //concrete
+
+
+  //draw sides of cylinder
+  glBegin(GL_QUAD_STRIP);
+  //glNormal3d(0.0, h, 0.0);
+    for(float i = 0; i <= 2.1*PI; i+=d){
+      glNormal3d(r * cos(i), 0, r * sin(i));
+      const float tc = ( i / (float)( 2 * PI ));
+      glTexCoord2f(-tc, 0);
+
+      glVertex3f(0.5*r * cos(i), -h, 0.5*r * sin(i));
+      glTexCoord2f(-tc, 2*h*s);
+
+      glVertex3f(r * cos(i), 0, r * sin(i));
+    }
+  glEnd();
+
+  glNormal3d(0,+1,0); //reset normals
+
+  glColor3f(0.627, 0.322, 0.176);
+
+  glBindTexture(GL_TEXTURE_2D,texture[5]); //dirt-esq
+
+  glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, 0, 0);  /* center */
+        for (double i = 2 * PI; i >= 0; i -= d)
+
+        {
+            glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
+            glVertex3f(r * cos(i), 0, r * sin(i));
+        }
+        /* close the loop back to 0 degrees */
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(r, 0, 0);
+    glEnd();
+
+    glNormal3d(0,-1,0); //reset normals
+
+
+  //  Undo transformations
+  glPopMatrix();
+}
+
+
+
+/*
  *  Draw a cube
  *     at (x,y,z)
  *     dimensions (dx,dy,dz)
@@ -249,6 +318,93 @@ static void ball(double x,double y,double z,double r)
    glPopMatrix();
 }
 
+/*
+ *  DrawLeaf draws a tiiiny leaf
+ */
+void DrawLeaf(double x, double y, double z, double tz, double startsize){
+  glPushMatrix();
+  glTranslated(x, y, z);
+  //  Offset, scale and rotate
+  float tex_size = 1;
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[6]); //fern leaf
+  glBegin(GL_QUADS);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-startsize,0,+1);
+  glTexCoord2f(tex_size,0); glVertex3f(+startsize,0,+1);
+  glTexCoord2f(tex_size,tex_size); glVertex3f(+tz,0,-1);
+  glTexCoord2f(0,tex_size); glVertex3f(-tz,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+
+}
+
+/*
+ *  Draws a single fern stem
+ */
+void DrawFern(double x, double y, double z){
+  glPushMatrix();
+    //draw leaves
+    glTranslated(x, y, z-0.3);
+    glScaled(0.2, 0.2, 0.3);
+    glRotated(40, 1,0,0);
+
+    DrawLeaf(0, 0, 0,      0.7, 1.0);
+    glRotated(-30, 1,0,0);
+    DrawLeaf(0, +0.5, -1.7,     0.5, 0.7);
+    glRotated(-30, 1,0,0);
+    DrawLeaf(0, +1.8, -3,     0, 0.5);
+  glPopMatrix();
+}
+
+void DrawPlant(double x, double y, double z){
+
+  glPushMatrix();
+  glScaled(0.55, 1, 0.55);
+
+    glTranslated(x, y*0.3+0.5, z);
+
+    //draw flowerpot
+    DrawFlowerpot(0,0,0, 1, 1);
+
+
+    glColor3f(1,1,1);
+    //draw leaves
+      DrawFern(0,0,0);
+
+      glRotated(40, 0,1,0);
+      DrawFern(0,0,0);
+
+      glRotated(45, 0,1,0);
+      DrawFern(0,0,0);
+
+      glRotated(50, 0,1,0);
+      DrawFern(0,0,0);
+
+      glRotated(30, 0.1,1,0);
+      DrawFern(0,0,0);
+
+      glRotated(50, 0,1,0);
+      DrawFern(0,0,0);
+
+      glRotated(30, 0,1,0);
+      DrawFern(0,0,0);
+
+      glRotated(55, 0.1,1,0);
+      DrawFern(0,0,0);
+
+
+
+
+  glPopMatrix();
+}
+
+
+
 
 /*
  *  DrawTeaCan - draws an Arizona tea can
@@ -345,6 +501,7 @@ static void DrawPillarTube(double x,double y,double z, double h, double s){
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
+  glColor3f(1, 1, 1);
 
   //draw sides of cylinder
   glBegin(GL_QUAD_STRIP);
@@ -498,14 +655,26 @@ void CheckPickup(){
  */
 void DrawPillar(double x, double y, double z, double h){
     //add concrete texture
+
     glPushMatrix();
-    glEnable(GL_TEXTURE_2D);
-    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-    glBindTexture(GL_TEXTURE_2D,texture[2]); //concrete!
+
+
+
     glColor3f(1.0, 1.0, 1.0);
     float scale = 0.3;
     glTranslated(x, y+0.02, z);
+
+    DrawPlant(x*0.55, h, z*0.55);
+
+
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+    glBindTexture(GL_TEXTURE_2D,texture[2]); //concrete!
+    glColor3f(1, 1, 1);
+
+
     glScalef(scale, scale, scale);
+
 
 
 
@@ -524,44 +693,8 @@ void DrawPillar(double x, double y, double z, double h){
 }
 
 
-void DrawLeaf(double x, double y, double z){
-  glPushMatrix();
-  //  Offset, scale and rotate
-  glTranslated(x,y-2,z);
-  glScaled(0.5,0,1);
-
-  float tex_size = 1;
-  //  Enable textures
-  glEnable(GL_TEXTURE_2D);
-  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
-  glBindTexture(GL_TEXTURE_2D,texture[6]); //fern leaf
-  glBegin(GL_QUADS);
-  //glColor3f(0.933, 0.510, 0.933);
-  glNormal3f( 0,+1, 0);
-  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
-  glTexCoord2f(tex_size,0); glVertex3f(+1,0,+1);
-  glTexCoord2f(tex_size,tex_size); glVertex3f(+1,0,-1);
-  glTexCoord2f(0,tex_size); glVertex3f(-1,0,-1);
-  glEnd();
-  glDisable(GL_TEXTURE_2D);
-  glPopMatrix();
-
-}
-
-/*
- *  Draws a fern object
- */
-void DrawFern(double x, double y, double z){
-  glPushMatrix();
-
-  //draw leaves
-  glTranslated(x, y+0.02, z);
-  DrawLeaf(0, 0, 0);
 
 
-
-  glPopMatrix();
-}
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -633,6 +766,10 @@ void display()
    Ground(-2, 0,-2, 1);
    Ground(-4, 0,-2, 1);
    Ground(-4, 0,-4, 1);
+   Ground(-4, 0,-6, 1);
+   Ground(-4, 0,-8, 1);
+   Ground(-4, 0,-10, 1);
+
 
 
 
@@ -648,17 +785,14 @@ void display()
 
    double pilht = 4.0;
 
-   DrawPillar(0,0,0,  pilht); //REMOVE ME
-   DrawFern(0, pilht, 0);
 
-
-   //Draw objects
-   DrawPillar(-1,0,-0.6,   pilht);
-   DrawPillar(1,0,-0.6,   pilht);
+   //Draw pillars
 
    DrawPillar(-4,0,-2.5,   pilht);
    DrawPillar(-2.1,0,-2.5,   pilht);
 
+   DrawPillar(-4,0,-6,   pilht);
+   DrawPillar(-2.1,0,-6,   pilht);
 
 
    //  Draw axes - no lighting from here on
@@ -814,7 +948,7 @@ void key(unsigned char ch,int x,int y)
 
   //reset zoom if needed
   if(zoom < 0.8){
-    zoom =0.6;
+    zoom = 0.8;
   }
   if(zoom > 2.7){
     zoom = 2.7;
