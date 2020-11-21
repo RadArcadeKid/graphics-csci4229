@@ -63,11 +63,23 @@ int forward, sideways = 0;
 double ball_x, ball_z = 0.0;
 
 //Texture array:
-unsigned int texture[8]; // Texture names
+unsigned int texture[9]; // Texture names
 unsigned int water_texture[7]; // water textures
 
 int speed = 12;
 double movement = 0.07;
+
+//sloppy way of defining number of cans in the level
+//so I don't have to update it everytime...probably not best practice
+#define numcans 3
+
+//array to determine whether the user has collected a can or not
+int collected_cans[numcans] = {0, 0, 0};
+
+//places to store x and z coordinates of cans
+double cans_x[numcans] = {0.0,  -2.0, -4.0};
+double cans_z[numcans] = {-2.0, -2.0, -4.0};
+
 
 
 typedef struct {float x,y,z;} vtx;
@@ -242,82 +254,93 @@ static void ball(double x,double y,double z,double r)
 }
 
 
-// /*
-//  *  DrawCyliner - useful for sides of controller + buttons
-//  *  h == height; r == radius
-//  */
-// static void DrawCylinder(double x,double y,double z, double delta_h, double s){
-//   const double d=0.05;
-//   float r = 0.9;
-//   double h = 0.201 + delta_h;
-//
-//   //  Save transformation
-//   glPushMatrix();
-//   //  Offset, scale and rotate
-//   glTranslated(x,y,z);
-//   glScaled(s,s,s);
-//
-//   //draw sides of cylinder
-//   glBegin(GL_QUAD_STRIP);
-//   //glNormal3d(0.0, h, 0.0);
-//     for(float i = 0; i <= 2.1*PI; i+=d){
-//       glNormal3d(r * cos(i), 0, r * sin(i));
-//       const float tc = ( i / (float)( 2 * PI ));
-//       glTexCoord2f(tc, - h * s);
-//       glVertex3f(r * cos(i), -h, r * sin(i));
-//       glTexCoord2f(tc,  h* s);
-//       glVertex3f(r * cos(i), h, r * sin(i));
-//     }
-//   glEnd();
-//
-//   glNormal3d(0,+1,0); //reset normals
-//
-//
-//   glBegin(GL_TRIANGLE_FAN);
-//         glTexCoord2f( 0.5, 0.5 );
-//         glVertex3f(0, h, 0);  /* center */
-//         for (double i = 2 * PI; i >= 0; i -= d)
-//
-//         {
-//             glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
-//             glVertex3f(r * cos(i), h, r * sin(i));
-//         }
-//         /* close the loop back to 0 degrees */
-//         glTexCoord2f( 0.5, 0.5 );
-//         glVertex3f(r, h, 0);
-//     glEnd();
-//
-//     glNormal3d(0,-1,0); //reset normals
-//
-//
-//     /* bottom triangle: note: for is in reverse order */
-//     glBegin(GL_TRIANGLE_FAN);
-//         glTexCoord2f( 0.5, 0.5 );
-//         glVertex3f(0, -h, 0);  /* center */
-//         for (double i = 0; i <= 2 * PI; i += d)
-//         {
-//             glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
-//             glVertex3f(r * cos(i), -h, r * sin(i));
-//         }
-//     glEnd();
-//
-//
-//
-//   //Shoutout to the kind soul on StackOverflow who happened to have a texture map which worked PERFECTLY
-//   //with my implementation of the cylinder -- source: https://stackoverflow.com/questions/26536570/how-do-i-texture-a-cylinder-in-opengl-created-with-triangle-strip
-//
-//
-//
-//   //  Undo transformations
-//   glPopMatrix();
-// }
+/*
+ *  DrawCyliner - useful for sides of controller + buttons
+ *  h == height; r == radius
+ */
+static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
+  const double d=0.05;
+  float r = 0.4;
+  //double h = 0.201 + delta_h;
+  double h = delta_h;
+
+
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  float sm = 0.7;
+  glScaled(sm*s, sm*s, sm*s);
+  glRotated(10, 0, 0, 1);
+
+
+  glColor3f(1, 1, 1);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[7]); //teacan!
+
+
+  //draw sides of cylinder
+  glBegin(GL_QUAD_STRIP);
+  //glNormal3d(0.0, h, 0.0);
+    for(float i = 0; i <= 2.1*PI; i+=d){
+      glNormal3d(r * cos(i), 0, r * sin(i));
+      const float tc = ( i / (float)( 2 * PI ));
+      glTexCoord2f(-tc, 0);
+
+      glVertex3f(r * cos(i), -h, r * sin(i));
+      glTexCoord2f(-tc, 2*h*s);
+
+      glVertex3f(r * cos(i), h, r * sin(i));
+    }
+  glEnd();
+
+  glNormal3d(0,+1,0); //reset normals
+
+  glBindTexture(GL_TEXTURE_2D,texture[8]); //teacan top/bottom!
+
+  glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, h, 0);  /* center */
+        for (double i = 2 * PI; i >= 0; i -= d)
+
+        {
+            glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
+            glVertex3f(r * cos(i), h, r * sin(i));
+        }
+        /* close the loop back to 0 degrees */
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(r, h, 0);
+    glEnd();
+
+    glNormal3d(0,-1,0); //reset normals
+
+
+    /* bottom triangle: note: for is in reverse order */
+    glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, -h, 0);  /* center */
+        for (double i = 0; i <= 2 * PI; i += d)
+        {
+            glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
+            glVertex3f(r * cos(i), -h, r * sin(i));
+        }
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+
+
+  //  Undo transformations
+  glPopMatrix();
+}
 
 static void Ground(double x, double y, double z, double s){
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
   glScaled(s,s,s);
-
 
   double gridsize = s;
 
@@ -339,17 +362,18 @@ static void Ground(double x, double y, double z, double s){
 }
 
 static void Water(double x, double y, double z, int ct){
+  int s = 2;
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,y,z);
-  glScaled(1,1,1);
+  glScaled(s,s,s);
 
 
-  double gridsize = 1;
+  double gridsize = s;
 
   //  Enable textures
   glEnable(GL_TEXTURE_2D);
-  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
   glBindTexture(GL_TEXTURE_2D, water_texture[ct]); //TODO: animated water
   glBegin(GL_QUADS);
   glColor3f(0.125, 0.698, 0.667);
@@ -363,9 +387,12 @@ static void Water(double x, double y, double z, int ct){
   glPopMatrix();
 }
 
+/*
+ * Draw the water floor!!
+ */
 void DrawWaterFloor(){
   glPushMatrix();
-  int gridsize = 12;
+  int gridsize = 8;
   glTranslated(0, -6, 0);
   glScaled(2, 0, 2);
 
@@ -382,11 +409,49 @@ void DrawWaterFloor(){
   glPopMatrix();
 }
 
+/*
+ * Draw Floating Can draws the Arizona tea can, but floating and spinning like a powerup in a video game
+ */
+void SetFloatingCan(double x, double y, double z){
+  glPushMatrix();
+  glTranslated(x,y,z);
+  glRotated(zh, 0, 1, 0);
+
+  DrawTeaCan(0, 0.5+0.1*Sin(zh), 0,  1.0,  0.5);
+
+  glPopMatrix();
+}
+
 void Reset(){
   th = 0;
   ph = 30;
   ball_x = 0;
   ball_z = 0;
+}
+
+
+void DrawCollectables(){
+  for(int i = 0; i < numcans; i++){
+      if(collected_cans[i] == 0){ //if the can has NOT been collected
+        Print("  i=%d", i);
+        SetFloatingCan(cans_x[i], 0.0, cans_z[i]); //draw the can
+      }
+  }
+}
+
+
+void CheckPickup(){
+  float range = 0.25;
+
+  for(int i = 0; i < numcans; i++){
+    //check if ball is within pickup range of can
+    if(ball_x >= cans_x[i]-range && ball_x <= cans_x[i]+range){
+      if(ball_z >= cans_z[i]-range && ball_z <= cans_z[i]+range){
+         collected_cans[i] = 1; //set the can to picked up so it no longer displays
+         //TODO: sound??
+      }
+    }
+  }
 }
 
 /*
@@ -461,14 +526,19 @@ void display()
    Ground(0, 0,-2, 1);
    Ground(-2, 0,-2, 1);
    Ground(-4, 0,-2, 1);
+   Ground(-4, 0,-4, 1);
 
-   Print("Ball_x, %f", ball_x);
+
+
+    //TODO: TURN ME INTO A GRID FUNCTION TO DETERMINE IF BALL IS OFFBASE
+   Print("ball_x, ball_z = %f, %f", ball_x, ball_z); //TODO:REMOVE ME
    if(ball_x < -4.5){ //TODO: TURN THIS INTO A TRIGGER
      Reset();
    }
 
+   DrawCollectables();
 
-   DrawMarble(ball_x,0.3,ball_z,     0.3, ball_th, ball_ph);
+   DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
 
    //  Draw axes - no lighting from here on
    glDisable(GL_LIGHTING);
@@ -572,6 +642,9 @@ void special(int key,int x,int y)
  */
 void key(unsigned char ch,int x,int y)
 {
+   CheckPickup(); //determine if the can was picked up
+
+
    //  Exit on ESC
    if (ch == 27)
       exit(0);
@@ -720,7 +793,7 @@ int main(int argc,char* argv[])
    glutInit(&argc,argv);
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
-   glutInitWindowSize(600,600);
+   glutInitWindowSize(800,800);
    glutCreateWindow("Final Project, Jake Henson");
    //  Set callbacks
    glutDisplayFunc(display);
@@ -738,6 +811,8 @@ int main(int argc,char* argv[])
    texture[4] = LoadTexBMP("error_2.bmp");
    texture[5] = LoadTexBMP("palm_bark.bmp");
    texture[6] = LoadTexBMP("palm.bmp");
+   texture[7] = LoadTexBMP("arizona_1.bmp");
+   texture[8] = LoadTexBMP("arizona_2.bmp");
 
    water_texture[0] = LoadTexBMP("water2.bmp");
    water_texture[1] = LoadTexBMP("water3.bmp");
