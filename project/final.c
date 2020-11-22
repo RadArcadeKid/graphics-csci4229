@@ -67,7 +67,7 @@ double ball_x, ball_z = 0.0;
 double ball_y = 0.2;
 
 //Texture array:
-unsigned int texture[11]; // Texture names
+unsigned int texture[12]; // Texture names
 unsigned int water_texture[7]; // water textures
 
 int speed = 12;
@@ -576,12 +576,6 @@ void DrawPlant(double x, double y, double z){
   glPopMatrix();
 }
 
-
-/*
- * Draw computer
- */
-
-
 /*
  *  DrawTeaCan - draws an Arizona tea can
  */
@@ -803,7 +797,77 @@ void DrawPillar(double x, double y, double z, double h){
     glPopMatrix();
 }
 
+/*
+ * Draw the front of the computer
+ */
+void computer(double x, double y, double z, double dx,double dy,double dz, double th){
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glScaled(dx, dy, dz);
 
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+  glBindTexture(GL_TEXTURE_2D,texture[11]); //computer front
+  glBegin(GL_QUADS);
+  glNormal3f( 0, 0, 1);
+  glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+  glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+  glTexCoord2f(1,1); glVertex3f(+1,+1, 1);
+  glTexCoord2f(0,1);  glVertex3f(-1,+1, 1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+
+  //  Back
+  glBegin(GL_QUADS);
+  glNormal3f( 0, 0,-1);
+  glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+  glTexCoord2f(1,0); glVertex3f(-1,-1,-1);
+  glTexCoord2f(1,1); glVertex3f(-1,+1,-1);
+  glTexCoord2f(0,1); glVertex3f(+1,+1,-1);
+  glEnd();
+  //  Right
+  glBegin(GL_QUADS);
+  glNormal3f(+1, 0, 0);
+  glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+  glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+  glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+  glTexCoord2f(0,1); glVertex3f(+1,+1,+1);
+  glEnd();
+  //  Left
+  glBegin(GL_QUADS);
+  glNormal3f(-1, 0, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+  glTexCoord2f(1,0); glVertex3f(-1,-1,+1);
+  glTexCoord2f(1,1); glVertex3f(-1,+1,+1);
+  glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+  glEnd();
+  //  Top
+  glBegin(GL_QUADS);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+  glTexCoord2f(1,0); glVertex3f(+1,+1,+1);
+  glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+  glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+  glEnd();
+  //  Bottom
+  glBegin(GL_QUADS);
+  glNormal3f( 0,-1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+  glTexCoord2f(1,0);  glVertex3f(+1,-1,-1);
+  glTexCoord2f(1,1); glVertex3f(+1,-1,+1);
+  glTexCoord2f(0,1); glVertex3f(-1,-1,+1);
+  glEnd();
+
+  //  Undo transofrmations
+  glPopMatrix();
+}
+
+/*
+ * Draw a keyboard
+ */
 void keyboard(double x, double y, double z, double dx,double dy,double dz, double th){
    //  Save transformation
    glPushMatrix();
@@ -912,18 +976,20 @@ void DrawComputer(double x, double y, double z, double s, double th, double ph){
   glTranslated(x,y+0.5,z);
   glRotated(th,0,1,0);
   glRotated(ph,1,0,0);
-  glScaled(s, s, s);
+  glScaled(s*1.1, s, s);
 
 
   //draw Monitor
   //glColor3f(1.000, 0.973, 0.863);
   glColor3f(1.000, 0.922, 0.804);
 
-  cube(0,-0.3,0, 0.6,0.15,0.6,   0);
+  computer(0,-0.3,0, 0.6,0.15,0.6,   0);
 
-  cube2(0,0.3,0, 0.42,0.42,0.4,   0);
-  cube(0,0.3,+0.4, 0.5,0.5,0.15,   0);
-  screen(0,0.3,0.56, 0.4);
+  cube2(0,0.35,0, 0.42,0.42,0.4,   0);
+  cube(0,0.35,+0.4, 0.5,0.5,0.15,   0);
+  cube(0,0,-0.2, 0.1,0.2,0.1,   0);
+
+  screen(0,0.35,0.56, 0.4);
 
   glRotated(10, 1,0,0);
   keyboard(0,-0.3,+1, 0.55,0.06,0.25,   0);
@@ -1006,7 +1072,7 @@ void display()
 
    DrawCollectables();
 
-   DrawComputer(0,0,0, 1,  0,0);
+   DrawComputer(-1,0,-5, 1,  0,0);
 
 
    //Draw pillars
@@ -1292,6 +1358,7 @@ int main(int argc,char* argv[])
    texture[8] = LoadTexBMP("arizona_2.bmp");
    texture[9] = LoadTexBMP("win95.bmp");
    texture[10] = LoadTexBMP("keyboard.bmp");
+   texture[11] = LoadTexBMP("compfront.bmp");
 
    water_texture[0] = LoadTexBMP("water2.bmp");
    water_texture[1] = LoadTexBMP("water3.bmp");
