@@ -67,7 +67,7 @@ double ball_x, ball_z = 0.0;
 double ball_y = 0.2;
 
 //Texture array:
-unsigned int texture[9]; // Texture names
+unsigned int texture[11]; // Texture names
 unsigned int water_texture[7]; // water textures
 
 int speed = 12;
@@ -75,14 +75,14 @@ double movement = 0.07;
 
 //sloppy way of defining number of cans in the level
 //so I don't have to update it everytime...probably not best practice
-#define numcans 3
+#define numcans 4
 
 //array to determine whether the user has collected a can or not
 int collected_cans[numcans] = {0, 0, 0};
 
 //places to store x and z coordinates of cans
-double cans_x[numcans] = {0.0,  -2.0, -4.0};
-double cans_z[numcans] = {-2.0, -2.0, -4.0};
+double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0};
+double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0};
 
 
 
@@ -386,6 +386,75 @@ static void cube(double x,double y,double z,
    glPopMatrix();
 }
 
+/*
+ *  Draw a cube
+ *     at (x,y,z)
+ *     dimensions (dx,dy,dz)
+ *     rotated th about the y axis
+ */
+static void cube2(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th){
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx, dy, dz);
+
+   int ts = 2;
+
+   double sx = ts*dx;
+   double sy = ts*dy;
+   double sz = ts*dz;
+
+   double dst = 0.7;
+
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(sx,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(sx,sy); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,sy);  glVertex3f(-1,+1, 1);
+
+   //  Back
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);  glVertex3f(+dst,-dst,-1);
+   glTexCoord2f(sx,0); glVertex3f(-dst,-dst,-1);
+   glTexCoord2f(sx,sy); glVertex3f(-dst,+dst,-1);
+   glTexCoord2f(0,sy); glVertex3f(+dst,+dst,-1);
+   //  Right
+
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(sz,0); glVertex3f(+dst,-dst,-1);
+   glTexCoord2f(sz,sy); glVertex3f(+dst,+dst,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,+1);
+   //  Left
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-dst,-dst,-1);
+   glTexCoord2f(sz,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(sz,sy); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,sy); glVertex3f(-dst,+dst,-1);
+   //  Top
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(sx,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(sx,sz); glVertex3f(+dst,+dst,-1);
+   glTexCoord2f(0,sz); glVertex3f(-dst,+dst,-1);
+   //  Bottom
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0); glVertex3f(-dst,-dst,-1);
+   glTexCoord2f(sx,0);  glVertex3f(+dst,-dst,-1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,sz); glVertex3f(-1,-1,+1);
+   //  End
+   glEnd();
+   //  Undo transofrmations
+   glPopMatrix();
+}
+
+
 //TODO: remove ball?
 /*
  *  Draw a ball
@@ -509,7 +578,7 @@ void DrawPlant(double x, double y, double z){
 
 
 /*
- * Draw computer 
+ * Draw computer
  */
 
 
@@ -735,8 +804,133 @@ void DrawPillar(double x, double y, double z, double h){
 }
 
 
+void keyboard(double x, double y, double z, double dx,double dy,double dz, double th){
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx, dy, dz);
 
 
+
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1);  glVertex3f(-1,+1, 1);
+   glEnd();
+
+
+   //  Back
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,-1);
+   glEnd();
+
+   //  Right
+   glBegin(GL_QUADS);
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,+1);
+   glEnd();
+   //  Left
+   glBegin(GL_QUADS);
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Top
+
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   glBindTexture(GL_TEXTURE_2D,texture[10]); //keyboard top
+   glBegin(GL_QUADS);
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+
+
+
+   //  Bottom
+   glBegin(GL_QUADS);
+   glNormal3f( 0,-1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,-1,+1);
+   glEnd();
+
+   //  Undo transofrmations
+   glPopMatrix();
+ }
+
+/*
+ *  Draw the windows 95 computer screen
+ */
+void screen(double x, double y, double z, double s){
+  float Emission[]  = {0.0,0.0,0.01*2,1.0};
+  glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glScaled(s,s,s);
+  glRotated(90, 1,0,0);
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+  glBindTexture(GL_TEXTURE_2D,texture[9]); //win95Screen
+  glBegin(GL_QUADS);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(1,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(1,1); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,1); glVertex3f(-1,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
+void DrawComputer(double x, double y, double z, double s, double th, double ph){
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y+0.5,z);
+  glRotated(th,0,1,0);
+  glRotated(ph,1,0,0);
+  glScaled(s, s, s);
+
+
+  //draw Monitor
+  //glColor3f(1.000, 0.973, 0.863);
+  glColor3f(1.000, 0.922, 0.804);
+
+  cube(0,-0.3,0, 0.6,0.15,0.6,   0);
+
+  cube2(0,0.3,0, 0.42,0.42,0.4,   0);
+  cube(0,0.3,+0.4, 0.5,0.5,0.15,   0);
+  screen(0,0.3,0.56, 0.4);
+
+  glRotated(10, 1,0,0);
+  keyboard(0,-0.3,+1, 0.55,0.06,0.25,   0);
+
+
+  glPopMatrix();
+}
 
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
@@ -812,11 +1006,11 @@ void display()
 
    DrawCollectables();
 
-
-   double pilht = 4.0;
+   DrawComputer(0,0,0, 1,  0,0);
 
 
    //Draw pillars
+   double pilht = 4.0;
 
    DrawPillar(-4,0,-2.5,   pilht);
    DrawPillar(-2.1,0,-2.5,   pilht);
@@ -849,17 +1043,6 @@ void display()
 
    //  Display parameters //TODO: REMOVE ME
     glWindowPos2i(5,5);
-   // Print("Angle=%d,%d  FOV=%d Projection=%s Light=%s",
-   //   th,ph,fov,mode?"Perpective":"Orthogonal",light?"On":"Off");
-   // if (light)
-   // {
-   //    glWindowPos2i(5,45);
-   //    Print("Model=%s LocalViewer=%s Distance=%d Elevation=%.1f",smooth?"Smooth":"Flat",local?"On":"Off",distance,ylight);
-   //    glWindowPos2i(5,25);
-   //    Print("Ambient=%d  Diffuse=%d Specular=%d Emission=%d Shininess=%.0f",ambient,diffuse,specular,emission,shiny);
-   //    Print("ylight = %d", ylight);
-   //
-   // }
 
 
    //  Render the scene and make it visible
@@ -1107,6 +1290,8 @@ int main(int argc,char* argv[])
    texture[6] = LoadTexBMP("palm.bmp");
    texture[7] = LoadTexBMP("arizona_1.bmp");
    texture[8] = LoadTexBMP("arizona_2.bmp");
+   texture[9] = LoadTexBMP("win95.bmp");
+   texture[10] = LoadTexBMP("keyboard.bmp");
 
    water_texture[0] = LoadTexBMP("water2.bmp");
    water_texture[1] = LoadTexBMP("water3.bmp");
