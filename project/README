@@ -12,6 +12,6 @@ KEY BINDINGS:
 
   arrow keys   change camera angle
   -/+          zoom camera closer/farther to marble
-
+  x            toggle HUD (number of cans)
   0            Reset view angle
   ESC          Exit

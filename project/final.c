@@ -22,7 +22,7 @@
 *   h/H        Change light height
 *   8/5        Raise/lower light
 *   +/-        Change field of view of perspective
-*   x          Toggle axes
+*   x          Toggle hud
 *   arrows     Change view angle
 *   0          Reset view angle
 *   ESC        Exit
@@ -32,7 +32,7 @@
 
 #define PI (3.1415927)
 
-int axes=0;       //  Display axes start with off
+int hud=1;       //  Display hud start with off
 int mode=1;       //  Projection mode
 int th=0;         //  Azimuth of view angle
 int ph=30;         //  Elevation of view angle
@@ -75,22 +75,22 @@ double movement = 0.07;
 
 //sloppy way of defining number of cans in the level
 //so I don't have to update it everytime...probably not best practice
-#define numcans 4
+#define numcans 7
 
 //array to determine whether the user has collected a can or not
-int collected_cans[numcans] = {0, 0, 0};
+int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0};
 
 //places to store x and z coordinates of cans
-double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0};
-double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0};
+double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12};
+double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6};
 
 
 
-#define numground 8
+#define numground 14
 
 //places to store the x and y coordinates of the ground
-double ground_x[numground] = {0, 0,-2,-4,-4, -4,-4,-4};
-double ground_z[numground] = {0,-2,-2,-2,-4, -6,-8,-10};
+double ground_x[numground] = {0, 0,-2,-4,    -6,-8,-10,-12,           -4, -4,-4,-4, -2 , 0};
+double ground_z[numground] = {0,-2,-2,-2,    -5.6,-5.6,-5.6,-5.6,          -4, -6,-8,-10,-10,-10};
 
 
 typedef struct {float x,y,z;} vtx;
@@ -99,7 +99,9 @@ typedef struct {int A,B,C;} tri;
 vtx is[n];
 
 
-
+/*
+ * Reset resets ball position, camera position
+ */
 void Reset(){
   th = 0;
   ph = 30;
@@ -107,9 +109,6 @@ void Reset(){
   ball_z = 0;
   ball_y = 0.2;
 }
-
-
-
 
 /*
  *  Draw vertex in polar coordinates
@@ -580,7 +579,7 @@ void DrawPlant(double x, double y, double z){
  *  DrawTeaCan - draws an Arizona tea can
  */
 static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
-  const double d=0.25;
+  const double d=0.45;
   float r = 0.4;
   //double h = 0.201 + delta_h;
   double h = delta_h;
@@ -741,24 +740,33 @@ void DrawCollectables(){
  * Called when the marble moves!
  */
 void CheckPickup(){
-  float range = 0.3;
+  float range = 0.31;
 
   for(int i = 0; i < numcans; i++){
     //check if ball is within pickup range of can
     if(ball_x >= cans_x[i]-range && ball_x <= cans_x[i]+range){
       if(ball_z >= cans_z[i]-range && ball_z <= cans_z[i]+range){
          collected_cans[i] = 1; //set the can to picked up so it no longer displays
-         //TODO: sound??
       }
     }
   }
+}
+
+int getNumCansLeft(){
+  int collected = 0;
+  for(int i = 0; i < numcans; i++){
+    if(collected_cans[i] == 1){ //if the user has picked up a can
+      collected+=1;
+    }
+  }
+  return collected;
 }
 
 /*
  * Draws a concrete pillar
  *
  */
-void DrawPillar(double x, double y, double z, double h){
+void DrawPillar(double x, double y, double z, double h, int includeplant){
     //add concrete texture
 
     glPushMatrix();
@@ -769,7 +777,8 @@ void DrawPillar(double x, double y, double z, double h){
     float scale = 0.3;
     glTranslated(x, y+0.02, z);
 
-    DrawPlant(x*0.55, h, z*0.55);
+    if(includeplant) //check whether to draw a plant
+      DrawPlant(x*0.55, h, z*0.55);
 
 
     glEnable(GL_TEXTURE_2D);
@@ -945,8 +954,6 @@ void keyboard(double x, double y, double z, double dx,double dy,double dz, doubl
  *  Draw the windows 95 computer screen
  */
 void screen(double x, double y, double z, double s){
-  float Emission[]  = {0.0,0.0,0.01*2,1.0};
-  glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
 
   glPushMatrix();
   //  Offset, scale and rotate
@@ -958,6 +965,35 @@ void screen(double x, double y, double z, double s){
   glEnable(GL_TEXTURE_2D);
   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
   glBindTexture(GL_TEXTURE_2D,texture[9]); //win95Screen
+  glBegin(GL_QUADS);
+  glNormal3f( 0,+1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  glTexCoord2f(1,0); glVertex3f(+1,0,+1);
+  glTexCoord2f(1,1); glVertex3f(+1,0,-1);
+  glTexCoord2f(0,1); glVertex3f(-1,0,-1);
+  glEnd();
+  glDisable(GL_TEXTURE_2D);
+  glPopMatrix();
+}
+
+/*
+ *  drawError draws a fake windows 95 error!
+ */
+void drawError(double x, double y, double z, double s, double th){
+  float Emission[]  = {0.0,0.0,0.01*2,1.0};
+  glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
+
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glScaled(s,s*0.6,s);
+  glRotated(90, 1,0,0);
+
+  //  Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+  glBindTexture(GL_TEXTURE_2D,texture[4]); //win95Screen
   glBegin(GL_QUADS);
   glNormal3f( 0,+1, 0);
   glTexCoord2f(0,0); glVertex3f(-1,0,+1);
@@ -1003,14 +1039,11 @@ void DrawComputer(double x, double y, double z, double s, double th, double ph){
  */
 void display()
 {
-   // glPushMatrix();
-   // glTranslated(ball_x, 0, ball_z);
-   // glPopMatrix();
 
    //TODO: background image
 
-   //TODO: REMOVE AXES
-   const double len=2.0;  //  Length of axes
+
+
    //  Erase the window and the depth buffer
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    //  Enable Z-buffering in OpenGL
@@ -1022,7 +1055,7 @@ void display()
    double Ex = -zoom*dim*Sin(th)*Cos(ph);
    double Ey = +zoom*dim        *Sin(ph);
    double Ez = +zoom*dim*Cos(th)*Cos(ph);
-   Print("Ex, Ez=%f,%f,", Ex,Ez);
+   int cans_left =  getNumCansLeft(); //check how many cans to go
    gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
 
    //  Flat or smooth shading
@@ -1066,49 +1099,72 @@ void display()
    DrawGround();
 
 
-   Print("ball_x, ball_z, %f, %f", ball_x, ball_z);
 
    DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
 
    DrawCollectables();
 
-   DrawComputer(-1,0,-5, 1,  0,0);
+   DrawComputer(-1,0,-5.6,   1.2,  0,0);
+
+   //DrawComputer(-10,-4,-15,   5,  0,0);
 
 
    //Draw pillars
    double pilht = 4.0;
 
-   DrawPillar(-4,0,-2.5,   pilht);
-   DrawPillar(-2.1,0,-2.5,   pilht);
+   DrawPillar(-4,0,-2.5,   pilht, 1);
+   DrawPillar(-2.1,0,-2.5,   pilht, 1);
 
-   DrawPillar(-4,0,-6,   pilht);
-   DrawPillar(-2.1,0,-6,   pilht);
+   DrawPillar(-4,0,-6,   pilht, 1);
+   DrawPillar(-2.1,0,-6,   pilht, 1);
 
 
-   //  Draw axes - no lighting from here on
+   DrawPillar(-1,0,-6.7,   pilht, 1);
+   DrawPillar(-1,0,-8.7,   pilht, 1);
+
+
+   drawError(-3+0.2*Sin(zh), 1, -11, 0.9, 0);
+   drawError(-3.1+0.3*Sin(zh), 1.1, -11.1, 0.9, 0);
+   drawError(-3.2+0.4*Sin(zh), 1.2, -11.2, 0.9, 0);
+   drawError(-3.3+0.5*Sin(zh), 1.3, -11.3, 0.9, 0);
+   drawError(-3.4+0.6*Sin(zh), 1.4, -11.4, 0.9, 0);
+
+
+   drawError(-5.2, 1, -9.5-0.2*Cos(zh), 0.9, 90);
+   drawError(-5.3, 1.1, -9.5-0.3*Cos(zh), 0.9, 90);
+   drawError(-5.4, 1.2, -9.5-0.4*Cos(zh), 0.9, 90);
+   drawError(-5.5, 1.3, -9.5-0.5*Cos(zh), 0.9, 90);
+   drawError(-5.6, 1.4, -9.5-0.6*Cos(zh), 0.9, 90);
+
+   //  Draw hud - no lighting from here on
    glDisable(GL_LIGHTING);
-   glColor3f(1,1,1);
-   if (axes) //TODO: remove axes
-   {
-      glBegin(GL_LINES);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(len,0.0,0.0);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(0.0,len,0.0);
-      glVertex3d(0.0,0.0,0.0);
-      glVertex3d(0.0,0.0,len);
-      glEnd();
-      //  Label axes
-      glRasterPos3d(len,0.0,0.0);
-      Print("X");
-      glRasterPos3d(0.0,len,0.0);
-      Print("Y");
-      glRasterPos3d(0.0,0.0,len);
-      Print("Z");
-   }
+   //glColor3f(1,1,1);
+   // if (hud) //TODO: remove hud
+   // {
+   //    // glBegin(GL_LINES);
+   //    // glVertex3d(0.0,0.0,0.0);
+   //    // glVertex3d(len,0.0,0.0);
+   //    // glVertex3d(0.0,0.0,0.0);
+   //    // glVertex3d(0.0,len,0.0);
+   //    // glVertex3d(0.0,0.0,0.0);
+   //    // glVertex3d(0.0,0.0,len);
+   //    // glEnd();
+   //    //  Label hud
+   //    glRasterPos2i(0,0);
+   //
+   //    glRasterPos3d(len,0.0,0.0);
+   //    Print("X");
+   //    glRasterPos3d(0.0,len,0.0);
+   //    Print("Y");
+   //    glRasterPos3d(0.0,0.0,len);
+   //    Print("Z");
+   // }
 
    //  Display parameters //TODO: REMOVE ME
-    glWindowPos2i(5,5);
+   if(hud)
+      Print("Cans:%d/%d", cans_left,numcans);
+   //Print("ball_x, ball_z, %f, %f", ball_x, ball_z);
+   glWindowPos2i(10,10);
 
 
    //  Render the scene and make it visible
@@ -1189,9 +1245,9 @@ void key(unsigned char ch,int x,int y)
       ph = 30;
       zoom = 2.0; //reset zoom too
   }
-   //  Toggle axes //TODO: REMOVE ME
+   //  Toggle hud //TODO: REMOVE ME
    else if (ch == 'x' || ch == 'X')
-      axes = 1-axes;
+      hud = 1-hud;
    //  Switch projection mode
    else if (ch == 'p' || ch == 'P') //REMOVE PROJECTION MODE SWITCH
       mode = 1-mode;
@@ -1229,8 +1285,8 @@ void key(unsigned char ch,int x,int y)
   if(zoom < 0.8){
     zoom = 0.8;
   }
-  if(zoom > 2.7){
-    zoom = 2.7;
+  if(zoom > 3.1){
+    zoom = 3.1;
   }
 
   ball_th %= 360;
@@ -1336,7 +1392,7 @@ int main(int argc,char* argv[])
    glutInit(&argc,argv);
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
-   glutInitWindowSize(800,800);
+   glutInitWindowSize(700,700);
    glutCreateWindow("Final Project, Jake Henson");
    //  Set callbacks
    glutDisplayFunc(display);
