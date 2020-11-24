@@ -3,15 +3,19 @@ FINAL PROJECT v0.7
 Jacob (Jake) Henson
 CSCI4229/5229 Fall 2020
 
-This project demonstrates what I have learned in openGL
-
+**WORK IN PROGRESS**
 This is a simple marble game where you collect tea cans and explore the level!
+A FEW NOTES -
+ - This is UNFINISHED - there will be more track, more objects, and more stuff to see later on!
+ - The collision for the marble and ground is currently not working, this will be fixed in the final build
 
 KEY BINDINGS:
   w/a/s/d      move marble N/W/S/E (does not change with camera, yet)
+  v/V          Reset marble position
+  r/R          Reset game entirely (marble + cans)
 
   arrow keys   change camera angle
   -/+          zoom camera closer/farther to marble
   x            toggle HUD (number of cans)
-  0            Reset view angle
+  0            Reset zoom and view angle
   ESC          Exit

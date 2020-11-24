@@ -177,12 +177,18 @@ void drawSkybox(double s, double x, double z){
 /*
  * Reset resets ball position, camera position
  */
-void Reset(){
+void Reset(int hardreset){
   th = 0;
   ph = 30;
   ball_x = 0;
   ball_z = 0;
   ball_y = 0.2;
+  if(hardreset){
+    //reset all cans in the world, too!
+    for(int i = 0; i < numcans; i++){
+        collected_cans[i] = 0;
+    }
+  }
 }
 
 /*
@@ -203,13 +209,18 @@ static void Vertex(int th,int ph)
 /*
  * Ground - draws the track
  */
-static void Ground(double x, double y, double z, double s){
+static void Ground(double x, double y, double z, double s, double dy){
   glPushMatrix();
   //  Offset, scale and rotate
-  glTranslated(x,y,z);
-  glScaled(s,s,s);
+  glTranslated(x,-dy,z);
+  glScaled(s,dy,s);
 
-  double gridsize = s;
+
+  int gridsize = 1;
+
+  double sx = gridsize*1;
+  double sy = (gridsize*dy);
+  double sz = gridsize*1;
 
   //  Enable textures
   glEnable(GL_TEXTURE_2D);
@@ -218,11 +229,55 @@ static void Ground(double x, double y, double z, double s){
   glBindTexture(GL_TEXTURE_2D,texture[1]); //carpet
   glBegin(GL_QUADS);
   glColor3f(0.933, 0.510, 0.933);
-  glNormal3f( 0,+1, 0);
-  glTexCoord2f(0,0); glVertex3f(-1,0,+1);
-  glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
-  glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
-  glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
+
+ //OLD GROUND
+//////////////////////////////////////////////////
+  // glNormal3f( 0,+1, 0);
+  // glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+  // glTexCoord2f(gridsize,0); glVertex3f(+1,0,+1);
+  // glTexCoord2f(gridsize,gridsize); glVertex3f(+1,0,-1);
+  // glTexCoord2f(0,gridsize); glVertex3f(-1,0,-1);
+///////////////////////////////////////////////////////
+
+
+ //NEW, 3D GROUND: 
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(-sx,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(-sx,sy); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,sy);  glVertex3f(-1,+1, 1);
+
+   //  Back
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,sy); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,-1);
+   //  Right
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(sz,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(sz,sy); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,+1);
+   //  Left
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sz,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(sz,sy); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,sy); glVertex3f(-1,+1,-1);
+   //  Top
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(sx,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,sz); glVertex3f(-1,+1,-1);
+   //  Bottom
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,sz); glVertex3f(-1,-1,+1);
+
   glEnd();
   glDisable(GL_TEXTURE_2D);
   glPopMatrix();
@@ -262,7 +317,7 @@ static void Water(double x, double y, double z, int ct){
  */
 static void DrawGround(){
   for(int i = 0; i < numground; i++){
-    Ground(ground_x[i], 0, ground_z[i], 1);
+    Ground(ground_x[i], 0, ground_z[i], 1, 0.05);
   }
 }
 
@@ -1509,78 +1564,73 @@ void key(unsigned char ch,int x,int y)
       ph = 30;
       zoom = 2.0; //reset zoom too
   }
-   //  Toggle hud //TODO: REMOVE ME
+   //  Toggle hud
    else if (ch == 'x' || ch == 'X')
       hud = 1-hud;
-   //  Switch projection mode
-   else if (ch == 'p' || ch == 'P') //REMOVE PROJECTION MODE SWITCH
-      mode = 1-mode;
-   // //  Ambient level
-   // else if (ch=='3' && ambient>0) //TODO: MAYBE PLAY WITH AMBIENT LIGHT A BIT??
-   //    ambient -= 5;
-   // else if (ch=='4' && ambient<100)
-   //    ambient += 5;
-   //  Diffuse level
-   else if (ch=='v' && diffuse>0)
-      diffuse -= 5;
-   else if (ch=='V' && diffuse<100)
-      diffuse += 5;
+   //  Reset Marble Position
+   else if (ch=='v' || ch=='V')
+      Reset(0);
+   //  Reset Game
+   else if (ch=='r' || ch=='R')
+      Reset(1);
+
    //  Move camera
    else if (ch == '+')
       zoom += 0.1;
    else if (ch == '-')
       zoom -= 0.1;
    // light height
-   else if (ch == 'H') //REMOVE ME
-      ylight += 0.5;
-   else if (ch == 'h')
-      ylight -= 0.5;
+   // else if (ch == 'H') //REMOVE ME
+   //    ylight += 0.5;
+   // else if (ch == 'h')
+   //    ylight -= 0.5;
   // // lfov
   // else if (ch == ']')
   //     fov += 1;
   // else if (ch == '[')
   //     fov -= 1;
 
-  //  Toggle light movement
-  else if (ch == 'm' || ch == 'M') //REMOVE ME
-      move = 1-move;
+  // //  Toggle light movement
+  // else if (ch == 'm' || ch == 'M') //REMOVE ME
+  //     move = 1-move;
 
   //reset zoom if needed
   if(zoom < 0.8){
     zoom = 0.8;
   }
-  if(zoom > 3.1){
-    zoom = 3.1;
+  if(zoom > 3.5){
+    zoom = 3.5;
   }
 
   ball_th %= 360;
   ball_ph %= 360;
 
   ////MARBLE MOVEMENT:
-  if (ch == 'w'){ //FORWARD
+  if (ch == 'w' || ch=='W'){ //FORWARD
      ball_ph -= speed;
      ball_z -= movement;
      forward = 1;
      sideways = 0;
   }
-  else if (ch == 's'){ //BACKWARD
+  else if (ch == 's' || ch=='S'){ //BACKWARD
      ball_ph += speed;
      ball_z += movement;
      forward = 1;
      sideways = 0;
   }
-  else if (ch == 'a'){ //LEFT
+  else if (ch == 'a' || ch == 'A'){ //LEFT
      ball_th += speed;
      ball_x -= movement;
      forward = 0;
      sideways = 1;
   }
-  else if (ch == 'd'){ //RIGHT
+  else if (ch == 'd' || ch == 'D'){ //RIGHT
      ball_th -= speed;
      ball_x += movement;
      forward = 0;
      sideways = 1;
   }
+
 
 
    //  Specular level
