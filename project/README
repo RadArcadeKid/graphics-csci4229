@@ -5,17 +5,27 @@ CSCI4229/5229 Fall 2020
 
 **WORK IN PROGRESS**
 This is a simple marble game where you collect tea cans and explore the level!
-A FEW NOTES -
- - This is UNFINISHED - there will be more track, more objects, and more stuff to see later on!
- - The collision for the marble and ground is currently not working, this will be fixed in the final build
 
-KEY BINDINGS:
-  w/a/s/d      move marble N/W/S/E (does not change with camera, yet)
+**WHAT REMAINS TO BE DONE:
+- Fixing marble sphere texture
+- Set up light objects (currently it's default ball, for testing)
+- More fun objects in scene (cassette tape, videogame controllers)
+- A MUCH longer and more fun track!
+(**stretch goals**)
+- Imported .obj objects from Blender (dolphins, greek statues)
+- Proper ground/collision detection for the marble
+
+**TO RUN:**
+> make
+> ./final
+
+**KEY BINDINGS:**
+  w/a/s/d      move marble N/W/S/E
   v/V          Reset marble position
   r/R          Reset game entirely (marble + cans)
 
   arrow keys   change camera angle
-  -/+          zoom camera closer/farther to marble
-  x            toggle HUD (number of cans)
+  +/-          zoom camera closer/farther
+  x/X          toggle HUD (number of collectibles indicator)
   0            Reset zoom and view angle
   ESC          Exit

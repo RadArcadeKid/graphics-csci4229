@@ -53,7 +53,6 @@ int specular  =   0;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
-float ylight  =   1;  // Elevation of light
 float zoom = 2.0;
 
 
@@ -240,7 +239,7 @@ static void Ground(double x, double y, double z, double s, double dy){
 ///////////////////////////////////////////////////////
 
 
- //NEW, 3D GROUND: 
+ //NEW, 3D GROUND:
    glNormal3f( 0, 0, 1);
    glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
    glTexCoord2f(-sx,0); glVertex3f(+1,-1, 1);
@@ -1393,7 +1392,7 @@ void display()
       float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
       float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
       //  Light position
-      float Position[]  = {distance*Cos(zh),ylight,distance*Sin(zh),1.0};
+      float Position[]  = {distance*Cos(zh),1,distance*Sin(zh),1.0};
       //  Draw light position as ball (still no lighting here)
       glColor3f(1,1,1);
       //ball(1, 1, 1, 0.1);
@@ -1575,16 +1574,10 @@ void key(unsigned char ch,int x,int y)
       Reset(1);
 
    //  Move camera
-   else if (ch == '+')
-      zoom += 0.1;
    else if (ch == '-')
+      zoom += 0.1;
+   else if (ch == '+')
       zoom -= 0.1;
-   // light height
-   // else if (ch == 'H') //REMOVE ME
-   //    ylight += 0.5;
-   // else if (ch == 'h')
-   //    ylight -= 0.5;
-  // // lfov
   // else if (ch == ']')
   //     fov += 1;
   // else if (ch == '[')
@@ -1665,6 +1658,8 @@ void reshape(int width,int height)
 {
    //  Ratio of the width to the height of the window
    asp = (height>0) ? (double)width/height : 1;
+
+   //zoom = 1.0+(width/height);
    //  Set the viewport to the entire window
    glViewport(0,0, width,height);
    //  Set projection
