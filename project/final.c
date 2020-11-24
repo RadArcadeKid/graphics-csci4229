@@ -1034,6 +1034,196 @@ void DrawComputer(double x, double y, double z, double s, double th, double ph){
   glPopMatrix();
 }
 
+
+
+/*
+ *  Draw a cube
+ *     at (x,y,z)
+ *     dimensions (dx,dy,dz)
+ *     rotated th about the y axis
+ */
+static void cubeParth(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th){
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx, dy, dz);
+
+   int ts = 2;
+
+   double sx = ts*dx;
+   double sy = ts*dy;
+   double sz = ts*dz;
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   glBindTexture(GL_TEXTURE_2D,texture[2]); //concrette
+   glColor3f(1,1,1);
+
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(sx,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(sx,sy); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,sy);  glVertex3f(-1,+1, 1);
+
+   //  Back
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,sy); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,-1);
+   //  Right
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(sz,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(sz,sy); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+1,+1,+1);
+   //  Left
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sz,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(sz,sy); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,sy); glVertex3f(-1,+1,-1);
+   //  Top
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(sx,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,sz); glVertex3f(-1,+1,-1);
+   //  Bottom
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,sz); glVertex3f(-1,-1,+1);
+   //  End
+   glEnd();
+   //  Undo transofrmations
+   glPopMatrix();
+}
+
+
+
+/*
+ *  Draw a cube
+ *     at (x,y,z)
+ *     dimensions (dx,dy,dz)
+ *     rotated th about the y axis
+ */
+static void cubeParth2(double x,double y,double z,
+                 double dx,double dy,double dz,
+                 double th){
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx, dy, dz);
+
+   double top = 0.02;
+
+   double sx = 1;
+   double sy = 1;
+   double sz = 1;
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
+   glBindTexture(GL_TEXTURE_2D,texture[2]); //concrette
+   glColor3f(1,1,1);
+
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1); glVertex3f(+top,+1, 1);
+   glTexCoord2f(0,1);  glVertex3f(-top,+1, 1);
+
+   //  Back
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,sy); glVertex3f(-top,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+top,+1,-1);
+   //  Right
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(sz,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(sz,sy); glVertex3f(+top,+1,-1);
+   glTexCoord2f(0,sy); glVertex3f(+top,+1,+1);
+   //  Left
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sz,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(sz,sy); glVertex3f(-top,+1,+1);
+   glTexCoord2f(0,sy); glVertex3f(-top,+1,-1);
+   //  Top
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-top,+1,+1);
+   glTexCoord2f(sx,0); glVertex3f(+top,+1,+1);
+   glTexCoord2f(sx,sz); glVertex3f(+top,+1,-1);
+   glTexCoord2f(0,sz); glVertex3f(-top,+1,-1);
+   //  Bottom
+   glNormal3f( 0,-one, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(sx,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(sx,sz); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,sz); glVertex3f(-1,-1,+1);
+   //  End
+   glEnd();
+   //  Undo transofrmations
+   glPopMatrix();
+}
+
+
+void DrawParthenon(double x, double y, double z, double s, double th){
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glScaled(s*0.5, s*0.5, s*0.5);
+
+  cubeParth(0,-0.1,-1.6,   2, 0.08, 3, 0);
+  cubeParth(0,-0.28,-1.6,   2.1, 0.08, 3.1, 0);
+
+  DrawPillar(-1.2,0,0.8,   6.0, 0);
+  DrawPillar(-0.4,0,0.8,   6.0, 0);
+
+  DrawPillar(-0.4,0,0,   6.0, 0);
+  DrawPillar(0.4,0,0,   6.0, 0);
+
+
+  DrawPillar(0.4,0,0.8,   6.0, 0);
+  DrawPillar(1.2,0,0.8,   6.0, 0);
+
+  DrawPillar(-1.2,0,0,   6.0, 0);
+  DrawPillar(1.2,0,0,   6.0, 0);
+
+  DrawPillar(-1.2,0,-0.8,   6.0, 0);
+  DrawPillar(1.2,0,-0.8,   6.0, 0);
+
+  DrawPillar(-1.2,0,-1.6,   6.0, 0);
+  DrawPillar(1.2,0,-1.6,   6.0, 0);
+
+  DrawPillar(-1.2,0,-2.4,   6.0, 0);
+  DrawPillar(1.2,0,-2.4,   6.0, 0);
+
+  DrawPillar(-1.2,0,-3.2,   6.0, 0);
+  DrawPillar(-0.4,0,-3.2,   6.0, 0);
+  DrawPillar(0.4,0,-3.2,   6.0, 0);
+  DrawPillar(1.2,0,-3.2,   6.0, 0);
+
+  cubeParth(0,2,-1.6,   2, 0.08, 3, 0);
+  cubeParth(0,2.08,-1.6,   2.1, 0.04, 3.1, 0);
+
+  cubeParth2(0,2.4,-1.6,   2, 0.3, 3, 0);
+
+
+  glPopMatrix();
+}
+
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
@@ -1106,7 +1296,16 @@ void display()
 
    DrawComputer(-1,0,-5.6,   1.2,  0,0);
 
-   //DrawComputer(-10,-4,-15,   5,  0,0);
+   DrawParthenon(-15,0,-5.5, 2, 90);
+   DrawPillar(-6,0,-5.3,   3, 0);
+   DrawPillar(-6,0,-3.3,   3, 0);
+
+
+   DrawPillar(-7.8,0,-5.3,   3, 0);
+   DrawPillar(-7.8,0,-3.3,   3, 0);
+
+   DrawPillar(-9.8,0,-5.3,   3, 0);
+   DrawPillar(-9.8,0,-3.3,   3, 0);
 
 
    //Draw pillars
@@ -1138,27 +1337,6 @@ void display()
 
    //  Draw hud - no lighting from here on
    glDisable(GL_LIGHTING);
-   //glColor3f(1,1,1);
-   // if (hud) //TODO: remove hud
-   // {
-   //    // glBegin(GL_LINES);
-   //    // glVertex3d(0.0,0.0,0.0);
-   //    // glVertex3d(len,0.0,0.0);
-   //    // glVertex3d(0.0,0.0,0.0);
-   //    // glVertex3d(0.0,len,0.0);
-   //    // glVertex3d(0.0,0.0,0.0);
-   //    // glVertex3d(0.0,0.0,len);
-   //    // glEnd();
-   //    //  Label hud
-   //    glRasterPos2i(0,0);
-   //
-   //    glRasterPos3d(len,0.0,0.0);
-   //    Print("X");
-   //    glRasterPos3d(0.0,len,0.0);
-   //    Print("Y");
-   //    glRasterPos3d(0.0,0.0,len);
-   //    Print("Z");
-   // }
 
    //  Display parameters //TODO: REMOVE ME
    if(hud)
