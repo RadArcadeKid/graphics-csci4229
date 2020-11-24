@@ -103,10 +103,10 @@ vtx is[n];
 
 
 ///SKYBOX
-void drawSkybox(double s){
+void drawSkybox(double s, double x, double z){
 
   glPushMatrix();
-  glTranslated(0,-7,0);
+  glTranslated(x,-7,z);
   glScaled(s,s,s);
 
   double sx = 1;
@@ -773,7 +773,7 @@ void DrawWaterFloor(){
   glPushMatrix();
   int gridsize = 15;
   glTranslated(0, -6, 0);
-  glScaled(2, 0, 2);
+  glScaled(2.5, 0, 2.5);
 
   int ct = zh / 30;
   ct %= 7;
@@ -1054,7 +1054,7 @@ void screen(double x, double y, double z, double s){
 /*
  *  drawError draws a fake windows 95 error!
  */
-void drawError(double x, double y, double z, double s, double th){
+void drawError(double x, double y, double z, double s, double th, int type){
   float Emission[]  = {0.0,0.0,0.01*2,1.0};
   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
 
@@ -1062,13 +1062,21 @@ void drawError(double x, double y, double z, double s, double th){
   //  Offset, scale and rotate
   glTranslated(x,y,z);
   glRotated(th,0,1,0);
-  glScaled(s,s*0.6,s);
+  if(type == 0)
+    glScaled(s,s*0.6,s); //error_2
+  else if (type == 1)
+    glScaled(s,s*0.4,s); //error_1
+
   glRotated(90, 1,0,0);
 
   //  Enable textures
   glEnable(GL_TEXTURE_2D);
   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-  glBindTexture(GL_TEXTURE_2D,texture[4]); //win95Screen
+  if(type == 0)
+    glBindTexture(GL_TEXTURE_2D,texture[4]); //error_2
+  else if (type == 1)
+    glBindTexture(GL_TEXTURE_2D,texture[3]); //error_1
+
   glBegin(GL_QUADS);
   glNormal3f( 0,+1, 0);
   glTexCoord2f(0,0); glVertex3f(-1,0,+1);
@@ -1200,9 +1208,11 @@ static void cubeParth2(double x,double y,double z,
 
    double top = 0.02;
 
-   double sx = 1;
-   double sy = 1;
-   double sz = 1;
+   int ts = 2;
+
+   double sx = ts*dx;
+   double sy = ts*dy;
+   double sz = ts*dz;
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
    glBindTexture(GL_TEXTURE_2D,texture[2]); //concrette
@@ -1352,7 +1362,7 @@ void display()
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
 
    //Draw Skybox
-   drawSkybox(30);
+   drawSkybox(26, ball_x, ball_z);
 
    //Display ground
    DrawWaterFloor();
@@ -1371,6 +1381,8 @@ void display()
    DrawComputer(-1,0,-5.6,   1.2,  0,0);
 
    DrawParthenon(-15,0,-5.5, 2, 90);
+   //drawError(-13.5, 1, -5.5, 0.9, 90, 1);
+
    DrawPillar(-6,0,-5.3,   3, 0);
    DrawPillar(-6,0,-3.3,   3, 0);
 
@@ -1396,18 +1408,18 @@ void display()
    DrawPillar(-1,0,-8.7,   pilht, 1);
 
 
-   drawError(-3+0.2*Sin(zh), 1, -11, 0.9, 0);
-   drawError(-3.1+0.3*Sin(zh), 1.1, -11.1, 0.9, 0);
-   drawError(-3.2+0.4*Sin(zh), 1.2, -11.2, 0.9, 0);
-   drawError(-3.3+0.5*Sin(zh), 1.3, -11.3, 0.9, 0);
-   drawError(-3.4+0.6*Sin(zh), 1.4, -11.4, 0.9, 0);
+   drawError(-3+0.2*Sin(zh), 1, -11, 0.9, 0, 0);
+   drawError(-3.1+0.3*Sin(zh), 1.1, -11.1, 0.9, 0, 0);
+   drawError(-3.2+0.4*Sin(zh), 1.2, -11.2, 0.9, 0, 0);
+   drawError(-3.3+0.5*Sin(zh), 1.3, -11.3, 0.9, 0, 0);
+   drawError(-3.4+0.6*Sin(zh), 1.4, -11.4, 0.9, 0, 0);
 
 
-   drawError(-5.2, 1, -9.5-0.2*Cos(zh), 0.9, 90);
-   drawError(-5.3, 1.1, -9.5-0.3*Cos(zh), 0.9, 90);
-   drawError(-5.4, 1.2, -9.5-0.4*Cos(zh), 0.9, 90);
-   drawError(-5.5, 1.3, -9.5-0.5*Cos(zh), 0.9, 90);
-   drawError(-5.6, 1.4, -9.5-0.6*Cos(zh), 0.9, 90);
+   drawError(-5.2, 1, -9.5-0.2*Cos(zh), 0.9, 90, 0);
+   drawError(-5.3, 1.1, -9.5-0.3*Cos(zh), 0.9, 90, 0);
+   drawError(-5.4, 1.2, -9.5-0.4*Cos(zh), 0.9, 90, 0);
+   drawError(-5.5, 1.3, -9.5-0.5*Cos(zh), 0.9, 90, 0);
+   drawError(-5.6, 1.4, -9.5-0.6*Cos(zh), 0.9, 90, 0);
 
    //  Draw hud - no lighting from here on
    glDisable(GL_LIGHTING);
