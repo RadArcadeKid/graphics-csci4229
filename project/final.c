@@ -66,9 +66,11 @@ int forward, sideways = 0;
 double ball_x, ball_z = 0.0;
 double ball_y = 0.2;
 
-//Texture array:
-unsigned int texture[12]; // Texture names
+//Texture arrays:
+unsigned int texture[12]; // misc textures
 unsigned int water_texture[7]; // water textures
+unsigned int skybox[5]; // skybox textures
+
 
 int speed = 12;
 double movement = 0.07;
@@ -97,6 +99,79 @@ typedef struct {float x,y,z;} vtx;
 typedef struct {int A,B,C;} tri;
 #define n 500
 vtx is[n];
+
+
+
+///SKYBOX
+void drawSkybox(double s){
+
+  glPushMatrix();
+  glTranslated(0,-7,0);
+  glScaled(s,s,s);
+
+  double sx = 1;
+  double sy = 1;
+  double sz = 1;
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+  glBindTexture(GL_TEXTURE_2D,skybox[0]);
+
+  glBegin(GL_QUADS);
+  glNormal3f( 0, 0, -1);
+  glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+  glTexCoord2f(sx,0); glVertex3f(+1,-1, 1);
+  glTexCoord2f(sx,sy); glVertex3f(+1,+1, 1);
+  glTexCoord2f(0,sy);  glVertex3f(-1,+1, 1);
+  glEnd();
+
+  //  Back
+  glBindTexture(GL_TEXTURE_2D,skybox[1]);
+  glBegin(GL_QUADS);
+  glNormal3f( 0, 0,1);
+  glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+  glTexCoord2f(sx,0); glVertex3f(-1,-1,-1);
+  glTexCoord2f(sx,sy); glVertex3f(-1,+1,-1);
+  glTexCoord2f(0,sy); glVertex3f(+1,+1,-1);
+  glEnd();
+
+  //  Right
+  glBindTexture(GL_TEXTURE_2D,skybox[3]);
+  glBegin(GL_QUADS);
+  glNormal3f(-1, 0, 0);
+  glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+  glTexCoord2f(sz,0); glVertex3f(+1,-1,-1);
+  glTexCoord2f(sz,sy); glVertex3f(+1,+1,-1);
+  glTexCoord2f(0,sy); glVertex3f(+1,+1,+1);
+  glEnd();
+
+  //  Left
+  glBindTexture(GL_TEXTURE_2D,skybox[2]);
+  glBegin(GL_QUADS);
+  glNormal3f(+1, 0, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+  glTexCoord2f(sz,0); glVertex3f(-1,-1,+1);
+  glTexCoord2f(sz,sy); glVertex3f(-1,+1,+1);
+  glTexCoord2f(0,sy); glVertex3f(-1,+1,-1);
+  glEnd();
+
+  //  Top
+  glBindTexture(GL_TEXTURE_2D,skybox[4]);
+  glBegin(GL_QUADS);
+  glNormal3f( 0,-1, 0);
+  glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+  glTexCoord2f(sx,0); glVertex3f(+1,+1,+1);
+  glTexCoord2f(sx,sz); glVertex3f(+1,+1,-1);
+  glTexCoord2f(0,sz); glVertex3f(-1,+1,-1);
+  glEnd();
+
+  glDisable(GL_TEXTURE_2D);
+
+
+  //  Undo transofrmations
+  glPopMatrix();
+}
+
 
 
 /*
@@ -235,13 +310,13 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
    glBindTexture(GL_TEXTURE_2D,texture[0]); //flashy 90s pattern
    //  Latitude bands
    glColor3f(1,1,1);
-   for (ph=-90;ph<90;ph+=5)
+   for (ph=-90;ph<90;ph+=10)
    {
       glBegin(GL_QUAD_STRIP);
-      for (th=0;th<=360;th+=5)
+      for (th=0;th<=360;th+=10)
       {
          Vertex(th,ph);
-         Vertex(th,ph+5);
+         Vertex(th,ph+10);
       }
       glEnd();
    }
@@ -696,7 +771,7 @@ static void DrawPillarTube(double x,double y,double z, double h, double s){
  */
 void DrawWaterFloor(){
   glPushMatrix();
-  int gridsize = 10;
+  int gridsize = 15;
   glTranslated(0, -6, 0);
   glScaled(2, 0, 2);
 
@@ -1215,8 +1290,8 @@ void DrawParthenon(double x, double y, double z, double s, double th){
   DrawPillar(0.4,0,-3.2,   6.0, 0);
   DrawPillar(1.2,0,-3.2,   6.0, 0);
 
-  cubeParth(0,2,-1.6,   2, 0.08, 3, 0);
-  cubeParth(0,2.08,-1.6,   2.1, 0.04, 3.1, 0);
+  cubeParth(0,2,-1.6,   2, 0.09, 3, 0);
+  cubeParth(0,2.09,-1.6,   2.1, 0.04, 3.1, 0);
 
   cubeParth2(0,2.4,-1.6,   2, 0.3, 3, 0);
 
@@ -1229,9 +1304,6 @@ void DrawParthenon(double x, double y, double z, double s, double th){
  */
 void display()
 {
-
-   //TODO: background image
-
 
 
    //  Erase the window and the depth buffer
@@ -1279,8 +1351,10 @@ void display()
       glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
 
-   //Display ground
+   //Draw Skybox
+   drawSkybox(30);
 
+   //Display ground
    DrawWaterFloor();
 
 
@@ -1601,6 +1675,13 @@ int main(int argc,char* argv[])
    water_texture[4] = LoadTexBMP("water6.bmp");
    water_texture[5] = LoadTexBMP("water7.bmp");
    water_texture[6] = LoadTexBMP("water8.bmp");
+
+
+   skybox[0] = LoadTexBMP("box_Front.bmp");
+   skybox[1] = LoadTexBMP("box_back.bmp");
+   skybox[2] = LoadTexBMP("box_Left.bmp");
+   skybox[3] = LoadTexBMP("box_Right.bmp");
+   skybox[4] = LoadTexBMP("box_Top.bmp");
 
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
