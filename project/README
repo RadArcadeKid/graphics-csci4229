@@ -2,18 +2,19 @@ FINAL PROJECT v0.7
 
 Jacob (Jake) Henson
 CSCI4229/5229 Fall 2020
+11/24/2020
 
 **WORK IN PROGRESS**
 This is a simple marble game where you collect tea cans and explore the level!
 
-**WHAT REMAINS TO BE DONE:
-- Fixing marble sphere texture
-- Set up light objects (currently it's default ball, for testing)
-- More fun objects in scene (cassette tape, videogame controllers)
-- A MUCH longer and more fun track!
-(**stretch goals**)
-- Imported .obj objects from Blender (dolphins, greek statues)
-- Proper ground/collision detection for the marble
+**WHAT TO LOOK FOR**
+Notice how the marble moves when you use WASD, the controls to zoom in/out,
+and the HUD (text) display on the bottom left that shows how many collectibles to get.
+Graphically, check out all of the original openGL objects I created and animated
+including the Arizona tea can, plants, columns, computer, keyboard and Parthenon
+Notice too how I included a skybox that doesn't clip!
+Remember you can navigate the marble around the scene to see more!
+Notice how the normals on all objects are correctly calculated!
 
 **TO RUN:**
 > make
@@ -29,3 +30,14 @@ This is a simple marble game where you collect tea cans and explore the level!
   x/X          toggle HUD (number of collectibles indicator)
   0            Reset zoom and view angle
   ESC          Exit
+
+
+**WHAT REMAINS TO BE DONE:
+  - Fixing marble sphere texture
+  - Set up light objects (currently it's default ball, for testing purposes)
+  - More fun objects in scene (cassette tape, cups, more aesthetic windows, video game system, etc.)
+  - A MUCH longer track to explore the level!
+  (**stretch goals**)
+  - Imported .obj objects from Blender (dolphins, greek statues)
+  - Animate said objects
+  - Proper ground/collision detection for the marble; reset game state if marble falls off track

@@ -90,8 +90,8 @@ double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6};
 #define numground 14
 
 //places to store the x and y coordinates of the ground
-double ground_x[numground] = {0, 0,-2,-4,    -6,-8,-10,-12,           -4, -4,-4,-4, -2 , 0};
-double ground_z[numground] = {0,-2,-2,-2,    -5.6,-5.6,-5.6,-5.6,          -4, -6,-8,-10,-10,-10};
+double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,           -4.0, -4.0,-4.0,-4.0, -2.0 , 0.0};
+double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,          -4.0, -6.0,-8.0,-10.0,-10.0,-10.0};
 
 
 typedef struct {float x,y,z;} vtx;
@@ -105,7 +105,7 @@ vtx is[n];
 void drawSkybox(double s, double x, double z){
 
   glPushMatrix();
-  glTranslated(x,-7,z);
+  glTranslated(x,-5,z);
   glScaled(s,s,s);
 
   double sx = 1;
@@ -285,12 +285,19 @@ static void Ground(double x, double y, double z, double s, double dy){
  /*
   * Water - draws the animated water
   */
-static void Water(double x, double y, double z, int ct){
-  int s = 2;
+static void Water(int x, int y, int z, int ct, int flip){
+  int s = 1;
   glPushMatrix();
+
   //  Offset, scale and rotate
   glTranslated(x,y,z);
   glScaled(s,s,s);
+
+  if(flip){
+    glRotated(180, 0,0,1);
+    glRotated(180, 0,1,0);
+ }
+
 
 
   double gridsize = s;
@@ -321,20 +328,29 @@ static void DrawGround(){
 }
 
 
-// static void CheckGround(double ball_x, double ball_z){
-//   double range = 1;
-//   int isFalling = 0;
-//
-//   for(unsigned int i = 0; i < numground; i++){
-//     if(ball_x > ground_x[i]-range && ball_z > ground_z[i]-range){
-//         isFalling = 1;
-//     }
-//   }
+static void CheckGround(double ball_x, double ball_z){
+  double range = 1.1; //range the ball can be within until it falls
+  int outOfRange = 1; //false, ball is IN range
 
-//   if(isFalling = 1){
-//     Print("OUTSIDE OF RANGE")
-//   }
-// }
+  //check all groundspaces to determine if the ball is out of range
+  for(unsigned int i = 0; i < numground; i++){
+    if(ball_x > ground_x[i]-range && ball_x < ground_x[i]+range){
+      if(ball_z >  ground_z[i]-range && ball_z < ground_z[i]+range){
+        outOfRange = 0;
+      }
+    }
+    if(ball_z >  ground_z[i]-range && ball_z < ground_z[i]+range){
+      if(ball_x > ground_x[i]-range && ball_x < ground_x[i]+range){
+        outOfRange = 0;
+      }
+    }
+  }
+
+  //TODO: FIGURE OUT HOW TO DROP + RESET THE BALL FROM HERE
+  if(outOfRange == 1){
+    Print("OUT OF RANGE");
+  }
+}
 
 /*
  *  Draw marble
@@ -825,16 +841,20 @@ static void DrawPillarTube(double x,double y,double z, double h, double s){
  */
 void DrawWaterFloor(){
   glPushMatrix();
+  glScaled(2,2,2);
   int gridsize = 15;
-  glTranslated(0, -6, 0);
-  glScaled(2.5, 0, 2.5);
+  glTranslated(-gridsize, -2.5, -gridsize);
 
   int ct = zh / 30;
   ct %= 7;
 
-  for(int i = -gridsize; i < gridsize; i+=2){
-    for(int j = -gridsize; j < gridsize; j+=2){
-      Water(i, 0, j, ct);
+  for(int i = 0; i < gridsize; i++){
+    for(int j = 0; j < gridsize; j++){
+      if(j %2 )
+        Water(i*2, 0, j*2, ct, 0);
+      else
+        Water(i*2, 0, j*2, ct, 1);
+
     }
   }
   glPopMatrix();
@@ -1368,8 +1388,6 @@ void DrawParthenon(double x, double y, double z, double s, double th){
  */
 void display()
 {
-
-
    //  Erase the window and the depth buffer
    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
    //  Enable Z-buffering in OpenGL
@@ -1416,7 +1434,7 @@ void display()
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
 
    //Draw Skybox
-   drawSkybox(26, ball_x, ball_z);
+   drawSkybox(20, ball_x, ball_z);
 
    //Display ground
    DrawWaterFloor();
@@ -1429,6 +1447,8 @@ void display()
 
 
    DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
+   CheckGround(ball_x, ball_z);
+
 
    DrawCollectables();
 
@@ -1552,7 +1572,6 @@ void special(int key,int x,int y)
 void key(unsigned char ch,int x,int y)
 {
    CheckPickup(); //determine if the can was picked up
-   //CheckGround(ball_x, ball_z); //determine if ball is within the range of the ground
 
    //  Exit on ESC
    if (ch == 27)
