@@ -21,7 +21,7 @@ Notice how the normals on all objects are correctly calculated!
 > ./final
 
 **KEY BINDINGS:**
-  w/a/s/d      move marble N/W/S/E
+  w/a/s/d      move marble forward/left/backward/right (depending on camera position)
   v/V          Reset marble position
   r/R          Reset game entirely (marble + cans)
 
@@ -30,14 +30,3 @@ Notice how the normals on all objects are correctly calculated!
   x/X          toggle HUD (number of collectibles indicator)
   0            Reset zoom and view angle
   ESC          Exit
-
-
-**WHAT REMAINS TO BE DONE:
-  - Fixing marble sphere texture
-  - Set up light objects (currently it's default ball, for testing purposes)
-  - More fun objects in scene (cassette tape, cups, more aesthetic windows, video game system, etc.)
-  - A MUCH longer track to explore the level!
-  (**stretch goals**)
-  - Imported .obj objects from Blender (dolphins, greek statues)
-  - Animate said objects
-  - Proper ground/collision detection for the marble; reset game state if marble falls off track

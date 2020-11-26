@@ -107,7 +107,7 @@ void drawSkybox(double s, double x, double z){
 
   glPushMatrix();
   glTranslated(x,-5,z);
-  glScaled(s,s,s);
+  glScaled(s,s*0.8,s);
 
   double sx = 1;
   double sy = 1;
@@ -183,6 +183,7 @@ void Reset(int hardreset){
   ball_x = 0;
   ball_z = 0;
   ball_y = 0.2;
+  ctrlmode = 0;
   if(hardreset){
     //reset all cans in the world, too!
     for(int i = 0; i < numcans; i++){
@@ -332,12 +333,12 @@ static void DrawGround(){
  * Drops the ball once it's fallen off the track
  */
 void DropBall(){
-   double yvel = -5; //default y velocity
+   double yvel = -6; //default y velocity
    yvel += (-9.8 * dt);
    ball_y += yvel * dt; //drop the ball relative to time
 
    //if ball has touched the water:
-   if(ball_y < -5){
+   if(ball_y < -7){
      Reset(0); //reset it's poistion to the beginning (but not the cans)
    }
 }
@@ -350,16 +351,19 @@ static void CheckGround(double ball_x, double ball_z){
   double range = 1.1; //range the ball can be within until it falls
   int outOfRange = 1; //false, ball is IN range
 
-  //check all groundspaces to determine if the ball is out of range
-  for(unsigned int i = 0; i < numground; i++){
-    if(ball_x > ground_x[i]-range && ball_x < ground_x[i]+range){
-      if(ball_z >  ground_z[i]-range && ball_z < ground_z[i]+range){
-        outOfRange = 0;
-      }
-    }
-    if(ball_z >  ground_z[i]-range && ball_z < ground_z[i]+range){
+  //make sure the ball isn't already falling!
+  if(ball_y == 0.2){
+    //check all groundspaces to determine if the ball is out of range
+    for(unsigned int i = 0; i < numground; i++){
       if(ball_x > ground_x[i]-range && ball_x < ground_x[i]+range){
-        outOfRange = 0;
+        if(ball_z >  ground_z[i]-range && ball_z < ground_z[i]+range){
+          outOfRange = 0;
+        }
+      }
+      if(ball_z >  ground_z[i]-range && ball_z < ground_z[i]+range){
+        if(ball_x > ground_x[i]-range && ball_x < ground_x[i]+range){
+          outOfRange = 0;
+        }
       }
     }
   }
@@ -377,7 +381,7 @@ static void CheckGround(double ball_x, double ball_z){
  */
 void DrawMarble(double x,double y,double z, double s, double th, double ph)
 {
-
+   const int d = 15;
    /*
     *  Draw surface of  marble
     */
@@ -400,13 +404,13 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
    glBindTexture(GL_TEXTURE_2D,texture[0]); //flashy 90s pattern
    //  Latitude bands
    glColor3f(1,1,1);
-   for (ph=-90;ph<90;ph+=10)
+   for (ph=-90;ph<90;ph+=d)
    {
       glBegin(GL_QUAD_STRIP);
-      for (th=0;th<=360;th+=10)
+      for (th=0;th<=360;th+=d)
       {
          Vertex(th,ph);
-         Vertex(th,ph+10);
+         Vertex(th,ph+d);
       }
       glEnd();
    }
@@ -419,9 +423,8 @@ void DrawMarble(double x,double y,double z, double s, double th, double ph)
  *  DrawFlowerpot - draws an Arizona tea can
  */
 static void DrawFlowerpot(double x,double y,double z, double delta_h, double s){
-  const double d=0.25;
+  const double d=2*PI/12;
   float r = 0.45;
-  //double h = 0.201 + delta_h;
   double h = delta_h;
 
 
@@ -744,7 +747,7 @@ void DrawPlant(double x, double y, double z){
  *  DrawTeaCan - draws an Arizona tea can
  */
 static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
-  const double d=0.45;
+  const double d=2*PI / 12;
   float r = 0.4;
   //double h = 0.201 + delta_h;
   double h = delta_h;
@@ -827,7 +830,7 @@ static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
  *  DrawPillarTube - draws the pillar tube for the pillar
  */
 static void DrawPillarTube(double x,double y,double z, double h, double s){
-  const double d=0.30;
+  const double d=2*PI/12;
 
   float r = 0.7;
 
@@ -1577,13 +1580,9 @@ void display()
    //  Display parameters //TODO: REMOVE ME
    if(hud)
       Print("Items:%d/%d", cans_left,numcans);
-   Print("   ctrlmode: %d", ctrlmode);
 
+   glWindowPos2i(20,20);
 
-
-
-
-   glWindowPos2i(10,10);
 
 
    //  Render the scene and make it visible
@@ -1669,6 +1668,7 @@ void key(unsigned char ch,int x,int y)
       th = 0;
       ph = 30;
       zoom = 2.0; //reset zoom too
+      ctrlmode = 0; //and control mode!
   }
    //  Toggle hud
    else if (ch == 'x' || ch == 'X')
@@ -1685,13 +1685,9 @@ void key(unsigned char ch,int x,int y)
       zoom += 0.1;
    else if (ch == '+')
       zoom -= 0.1;
-  // else if (ch == ']')
-  //     fov += 1;
-  // else if (ch == '[')
-  //     fov -= 1;
 
   // //  Toggle light movement
-  // else if (ch == 'm' || ch == 'M') //REMOVE ME
+  // else if (ch == 'm' || ch == 'M') //REMOVE 'move' variable!!!
   //     move = 1-move;
 
   //reset zoom if needed
@@ -1707,7 +1703,7 @@ void key(unsigned char ch,int x,int y)
 
   ////MARBLE MOVEMENT
   //Determine which way to move the marble
-  //based on the current way the camera is facing 
+  //based on the current way the camera is facing
   if (ch == 'w' || ch=='W'){
     if(ctrlmode == 0) MoveForward();
     if(ctrlmode == 1) MoveLeft();
