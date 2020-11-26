@@ -107,7 +107,7 @@ void drawSkybox(double s, double x, double z){
 
   glPushMatrix();
   glTranslated(x,-5,z);
-  glScaled(s,s*0.8,s);
+  glScaled(s,s,s);
 
   double sx = 1;
   double sy = 1;
@@ -333,7 +333,7 @@ static void DrawGround(){
  * Drops the ball once it's fallen off the track
  */
 void DropBall(){
-   double yvel = -6; //default y velocity
+   double yvel = -5 + (ball_y-0.2); //y velocity
    yvel += (-9.8 * dt);
    ball_y += yvel * dt; //drop the ball relative to time
 
@@ -912,7 +912,7 @@ void DrawCollectables(){
  * Called when the marble moves!
  */
 void CheckPickup(){
-  float range = 0.31;
+  float range = 0.36;
 
   for(int i = 0; i < numcans; i++){
     //check if ball is within pickup range of can
@@ -1514,14 +1514,12 @@ void display()
    //Draw Skybox
    drawSkybox(20, ball_x, ball_z);
 
-   //Display ground
+   //Display water floor
    DrawWaterFloor();
 
 
-   //Instead of declaring these as objects, perhaps use an array
-   //With given bounds, and then create those objects relative to the array
+   //Instead of declaring these as individual objects, use an array to map track
    DrawGround();
-
 
 
    DrawMarble(ball_x,ball_y,ball_z,     0.2, ball_th, ball_ph);
@@ -1532,7 +1530,7 @@ void display()
    DrawComputer(-1,0,-5.6,   1.2,  0,0);
 
    DrawParthenon(-15,0,-5.5, 2, 90);
-   //drawError(-13.5, 1, -5.5, 0.9, 90, 1);
+   drawError(-13.6, 1.3, -5.5,   1, 90, 1);
 
    DrawPillar(-6,0,-5.3,   3, 0);
    DrawPillar(-6,0,-3.3,   3, 0);
