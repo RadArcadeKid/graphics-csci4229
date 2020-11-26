@@ -99,6 +99,7 @@ typedef struct {int A,B,C;} tri;
 #define n 500
 vtx is[n];
 
+int ctrlmode = 0;
 
 
 ///SKYBOX
@@ -1403,6 +1404,32 @@ void DrawParthenon(double x, double y, double z, double s, double th){
 }
 
 /*
+ * Get mode of control depending on which way the camera is facing
+ */
+void SetControlMode(){
+  if(th > 0){
+    if(th <= 45 || th >= 315)
+      ctrlmode = 0;
+    if(th < 315 && th > 225)
+      ctrlmode = 1;
+    if(th <= 225 && th >= 135)
+      ctrlmode = 2;
+    if(th < 135 && th > 45)
+      ctrlmode = 3;
+  }
+  if(th < 0){
+    if(th >= -45 || th <= -315)
+      ctrlmode = 0;
+    if(th > -315 && th < -45)
+      ctrlmode = 1;
+    if(th >= -225 && th <= -135)
+      ctrlmode = 2;
+    if(th > -315 && th < -225)
+      ctrlmode = 3;
+  }
+}
+
+/*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
 void display()
@@ -1513,13 +1540,20 @@ void display()
    drawError(-5.5, 1.3, -9.5-0.5*Cos(zh), 0.9, 90, 0);
    drawError(-5.6, 1.4, -9.5-0.6*Cos(zh), 0.9, 90, 0);
 
+
+
    //  Draw hud - no lighting from here on
    glDisable(GL_LIGHTING);
 
    //  Display parameters //TODO: REMOVE ME
    if(hud)
       Print("Cans:%d/%d", cans_left,numcans);
-   Print("Ex, Ez, %f, %f", Ex, Ez);
+   Print("   th %d,  ctrlmode %d", th, ctrlmode);
+
+
+
+
+
    glWindowPos2i(10,10);
 
 
@@ -1583,6 +1617,10 @@ void special(int key,int x,int y)
    //  Update projection
    Project(mode?fov:0,asp,dim);
 
+   //set control mode
+   SetControlMode();
+
+
    //  Tell GLUT it is necessary to redisplay the scene
    glutPostRedisplay();
 }
@@ -1639,25 +1677,25 @@ void key(unsigned char ch,int x,int y)
   ball_ph %= 360;
 
   ////MARBLE MOVEMENT:
-  if (ch == 'w' || ch=='W'){ //FORWARD
+  if (ch == 'w' || ch=='W'){ //FORWARD ^
      ball_ph -= speed;
      ball_z -= movement;
      forward = 1;
      sideways = 0;
   }
-  else if (ch == 's' || ch=='S'){ //BACKWARD
+  else if (ch == 's' || ch=='S'){ //BACKWARD  v
      ball_ph += speed;
      ball_z += movement;
      forward = 1;
      sideways = 0;
   }
-  else if (ch == 'a' || ch == 'A'){ //LEFT
+  else if (ch == 'a' || ch == 'A'){ //LEFT  <
      ball_th += speed;
      ball_x -= movement;
      forward = 0;
      sideways = 1;
   }
-  else if (ch == 'd' || ch == 'D'){ //RIGHT
+  else if (ch == 'd' || ch == 'D'){ //RIGHT  >
      ball_th -= speed;
      ball_x += movement;
      forward = 0;
