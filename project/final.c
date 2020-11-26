@@ -54,8 +54,8 @@ int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
 int zh        =  90;  // Light azimuth
 float zoom = 2.0;
-
-
+int old_t;
+float dt;
 
 int ball_ph = 0;
 int ball_th = 0;
@@ -327,7 +327,24 @@ static void DrawGround(){
   }
 }
 
+/*
+ * Drops the ball once it's fallen off the track
+ */
+void DropBall(){
+   double yvel = -5; //default y velocity
+   yvel += (-9.8 * dt);
+   ball_y += yvel * dt; //drop the ball relative to time
 
+   //if ball has touched the water:
+   if(ball_y < -6){
+     Reset(0); //reset it's poistion to the beginning (but not the cans)
+   }
+}
+
+
+/*
+ * CheckGround checks if the marble is on the track
+ */
 static void CheckGround(double ball_x, double ball_z){
   double range = 1.1; //range the ball can be within until it falls
   int outOfRange = 1; //false, ball is IN range
@@ -346,11 +363,13 @@ static void CheckGround(double ball_x, double ball_z){
     }
   }
 
-  //TODO: FIGURE OUT HOW TO DROP + RESET THE BALL FROM HERE
+  //if the ball has fallen off the track
   if(outOfRange == 1){
-    Print("OUT OF RANGE");
+    DropBall(); //drop it
   }
 }
+
+
 
 /*
  *  Draw marble
@@ -1446,11 +1465,10 @@ void display()
 
 
 
-   DrawMarble(ball_x,0.2,ball_z,     0.2, ball_th, ball_ph);
-   CheckGround(ball_x, ball_z);
+   DrawMarble(ball_x,ball_y,ball_z,     0.2, ball_th, ball_ph);
+   CheckGround(ball_x, ball_z);//determine if the ball can drop
 
-
-   DrawCollectables();
+   DrawCollectables(); //draw the cans in the map
 
    DrawComputer(-1,0,-5.6,   1.2,  0,0);
 
@@ -1501,7 +1519,7 @@ void display()
    //  Display parameters //TODO: REMOVE ME
    if(hud)
       Print("Cans:%d/%d", cans_left,numcans);
-   //Print("ball_x, ball_z, %f, %f", ball_x, ball_z);
+   Print("Ex, Ez, %f, %f", Ex, Ez);
    glWindowPos2i(10,10);
 
 
@@ -1516,11 +1534,14 @@ void display()
  */
 void idle()
 {
-   //  Elapsed time in seconds
    double time = glutGet(GLUT_ELAPSED_TIME)/1000.0;
    zh = fmod(90*time,360.0);
 
-   //  Tell GLUT it is necessary to redisplay the scene
+   int t;
+   t = glutGet(GLUT_ELAPSED_TIME);
+   dt = (t - old_t) / 1000.0;
+   old_t = t;
+
    glutPostRedisplay();
 }
 
@@ -1698,6 +1719,7 @@ static float frand(float min,float max,float p)
  */
 void Init()
 {
+   old_t = glutGet(GLUT_ELAPSED_TIME);
    for (int i=0;i<n;i++)
    {
       float th = frand(0,360,1);
