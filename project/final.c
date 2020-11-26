@@ -337,7 +337,7 @@ void DropBall(){
    ball_y += yvel * dt; //drop the ball relative to time
 
    //if ball has touched the water:
-   if(ball_y < -6){
+   if(ball_y < -5){
      Reset(0); //reset it's poistion to the beginning (but not the cans)
    }
 }
@@ -1429,6 +1429,35 @@ void SetControlMode(){
   }
 }
 
+
+/*
+ * Forward Backward Left Right determine which way the marble should move when called!
+ */
+static void MoveForward(){
+  ball_ph -= speed;
+  ball_z -= movement;
+  forward = 1;
+  sideways = 0;
+}
+static void MoveBackward(){
+  ball_ph += speed;
+  ball_z += movement;
+  forward = 1;
+  sideways = 0;
+}
+static void MoveLeft(){
+  ball_th += speed;
+  ball_x -= movement;
+  forward = 0;
+  sideways = 1;
+}
+static void MoveRight(){
+  ball_th -= speed;
+  ball_x += movement;
+  forward = 0;
+  sideways = 1;
+}
+
 /*
  *  OpenGL (GLUT) calls this routine to display the scene
  */
@@ -1547,8 +1576,8 @@ void display()
 
    //  Display parameters //TODO: REMOVE ME
    if(hud)
-      Print("Cans:%d/%d", cans_left,numcans);
-   Print("   th %d,  ctrlmode %d", th, ctrlmode);
+      Print("Items:%d/%d", cans_left,numcans);
+   Print("   ctrlmode: %d", ctrlmode);
 
 
 
@@ -1676,30 +1705,32 @@ void key(unsigned char ch,int x,int y)
   ball_th %= 360;
   ball_ph %= 360;
 
-  ////MARBLE MOVEMENT:
-  if (ch == 'w' || ch=='W'){ //FORWARD ^
-     ball_ph -= speed;
-     ball_z -= movement;
-     forward = 1;
-     sideways = 0;
+  ////MARBLE MOVEMENT
+  //Determine which way to move the marble
+  //based on the current way the camera is facing 
+  if (ch == 'w' || ch=='W'){
+    if(ctrlmode == 0) MoveForward();
+    if(ctrlmode == 1) MoveLeft();
+    if(ctrlmode == 2) MoveBackward();
+    if(ctrlmode == 3) MoveRight();
   }
-  else if (ch == 's' || ch=='S'){ //BACKWARD  v
-     ball_ph += speed;
-     ball_z += movement;
-     forward = 1;
-     sideways = 0;
+  else if (ch == 's' || ch=='S'){
+    if(ctrlmode == 0) MoveBackward();
+    if(ctrlmode == 1) MoveRight();
+    if(ctrlmode == 2) MoveForward();
+    if(ctrlmode == 3) MoveLeft();
   }
-  else if (ch == 'a' || ch == 'A'){ //LEFT  <
-     ball_th += speed;
-     ball_x -= movement;
-     forward = 0;
-     sideways = 1;
+  else if (ch == 'a' || ch == 'A'){
+    if(ctrlmode == 0) MoveLeft();
+    if(ctrlmode == 1) MoveBackward();
+    if(ctrlmode == 2) MoveRight();
+    if(ctrlmode == 3) MoveForward();
   }
-  else if (ch == 'd' || ch == 'D'){ //RIGHT  >
-     ball_th -= speed;
-     ball_x += movement;
-     forward = 0;
-     sideways = 1;
+  else if (ch == 'd' || ch == 'D'){
+    if(ctrlmode == 0) MoveRight();
+    if(ctrlmode == 1) MoveForward();
+    if(ctrlmode == 2) MoveLeft();
+    if(ctrlmode == 3) MoveBackward();
   }
 
 
