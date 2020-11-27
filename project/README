@@ -4,17 +4,22 @@ Jacob (Jake) Henson
 CSCI4229/5229 Fall 2020
 11/24/2020
 
-**WORK IN PROGRESS**
 This is a simple marble game where you collect tea cans and explore the level!
+Can you find the secret easter egg?
 
 **WHAT TO LOOK FOR**
-Notice how the marble moves when you use WASD, the controls to zoom in/out,
-and the HUD (text) display on the bottom left that shows how many collectibles to get.
-Graphically, check out all of the original openGL objects I created and animated
-including the Arizona tea can, plants, columns, computer, keyboard and Parthenon
-Notice too how I included a skybox that doesn't clip!
+- Notice how the marble moves when you use WASD, depending on the camera
+- HUD (text) display on the bottom left that shows how many collectibles to get.
+- Watch what happens when you roll the marble off the track!
+
+
+- Graphically, check out all of the original openGL objects I created and animated including
+  - Arizona tea can
+  - Columns, Plants
+  - Computer, keyboard
+  - Parthenon
+
 Remember you can navigate the marble around the scene to see more!
-Notice how the normals on all objects are correctly calculated!
 
 **TO RUN:**
 > make

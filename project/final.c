@@ -71,27 +71,27 @@ unsigned int water_texture[7]; // water textures
 unsigned int skybox[5]; // skybox textures
 
 
-int speed = 12;
-double movement = 0.07;
+int speed = 13;
+double movement = 0.08;
 
 //sloppy way of defining number of cans in the level
 //so I don't have to update it everytime...probably not best practice
-#define numcans 7
+#define numcans 8
 
 //array to determine whether the user has collected a can or not
-int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0};
+int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 //places to store x and z coordinates of cans
-double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12};
-double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6};
+double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12, 4.0};
+double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6, -8.0};
 
 
 
-#define numground 14
+#define numground 19
 
 //places to store the x and y coordinates of the ground
-double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,           -4.0, -4.0,-4.0,-4.0, -2.0 , 0.0};
-double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,          -4.0, -6.0,-8.0,-10.0,-10.0,-10.0};
+double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,           -4.0, -4.0,-4.0,-4.0, -2.0 , 0.0, 2.0,  2.0, 4.0, 6.0};
+double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,          -4.0, -6.0,-8.0,-10.0,-10.0,-10.0, -10.0, -8.0,-8.0, -8.0};
 
 
 typedef struct {float x,y,z;} vtx;
@@ -1394,8 +1394,10 @@ void DrawParthenon(double x, double y, double z, double s, double th){
 
   DrawPillar(-1.2,0,-3.2,   6.0, 0);
   DrawPillar(-0.4,0,-3.2,   6.0, 0);
+
   DrawPillar(0.4,0,-3.2,   6.0, 0);
   DrawPillar(1.2,0,-3.2,   6.0, 0);
+
 
   cubeParth(0,2,-1.6,   2, 0.09, 3, 0);
   cubeParth(0,2.09,-1.6,   2.1, 0.04, 3.1, 0);
@@ -1529,8 +1531,8 @@ void display()
 
    DrawComputer(-1,0,-5.6,   1.2,  0,0);
 
-   DrawParthenon(-15,0,-5.5, 2, 90);
-   drawError(-13.6, 1.3, -5.5,   1, 90, 1);
+   DrawParthenon(-15,0,-5.7, 2, 90);
+   drawError(-13.6, 1.3, -5.7,   1, 90, 1);
 
    DrawPillar(-6,0,-5.3,   3, 0);
    DrawPillar(-6,0,-3.3,   3, 0);
@@ -1572,12 +1574,23 @@ void display()
 
 
 
+   DrawPillar(1.5,0,-8.7,   pilht, 1);
+   drawError(3.2, 1, -10.3+0.2*Cos(zh), 0.9, 270, 0);
+   drawError(3.3, 1.1, -10.3+0.3*Cos(zh), 0.9, 270, 0);
+   drawError(3.4, 1.2, -10.3+0.4*Cos(zh), 0.9, 270, 0);
+   drawError(3.5, 1.3, -10.3+0.5*Cos(zh), 0.9, 270, 0);
+   drawError(3.6, 1.4, -10.3+0.6*Cos(zh), 0.9, 270, 0);
+
+
+
+
+
    //  Draw hud - no lighting from here on
    glDisable(GL_LIGHTING);
 
    //  Display parameters //TODO: REMOVE ME
    if(hud)
-      Print("Items:%d/%d", cans_left,numcans);
+      Print("Cans:%d/%d", cans_left,numcans);
 
    glWindowPos2i(20,20);
 
