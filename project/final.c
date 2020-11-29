@@ -66,7 +66,7 @@ double ball_x, ball_z = 0.0;
 double ball_y = 0.2;
 
 //Texture arrays:
-unsigned int texture[12]; // misc textures
+unsigned int texture[16]; // misc textures
 unsigned int water_texture[7]; // water textures
 unsigned int skybox[5]; // skybox textures
 
@@ -100,6 +100,8 @@ typedef struct {int A,B,C;} tri;
 vtx is[n];
 
 int ctrlmode = 0;
+
+int collectedTape = 0;
 
 
 ///SKYBOX
@@ -1185,7 +1187,87 @@ void drawError(double x, double y, double z, double s, double th, int type){
   glPopMatrix();
 }
 
-void DrawComputer(double x, double y, double z, double s, double th, double ph){
+
+/*
+ *  Draw The Secret Tape
+ */
+void DrawSecretTape(double x, double y, double z, double dx,double dy,double dz, double th){
+   //  Save transformation
+   glPushMatrix();
+   //  Offset, scale and rotate
+   glTranslated(x,y,z);
+   glRotated(th,0,1,0);
+   glScaled(dx, dy, dz);
+
+   glColor3f(0.2, 0.2, 0.2);
+
+
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   glBindTexture(GL_TEXTURE_2D,texture[14]); //secret tape front
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0, 1);
+   glTexCoord2f(0,0); glVertex3f(-1,-1, 1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1, 1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1, 1);
+   glTexCoord2f(0,1);  glVertex3f(-1,+1, 1);
+   glEnd();
+
+
+   //  Back
+   glEnable(GL_TEXTURE_2D);
+   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+   glBindTexture(GL_TEXTURE_2D,texture[15]); //secret tape back
+   glBegin(GL_QUADS);
+   glNormal3f( 0, 0,-1);
+   glTexCoord2f(0,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,-1);
+   glEnd();
+   glDisable(GL_TEXTURE_2D);
+
+
+   //  Right
+   glBegin(GL_QUADS);
+   glNormal3f(+1, 0, 0);
+   glTexCoord2f(0,0);   glVertex3f(+1,-1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(+1,+1,+1);
+   glEnd();
+   //  Left
+   glBegin(GL_QUADS);
+   glNormal3f(-1, 0, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0); glVertex3f(-1,-1,+1);
+   glTexCoord2f(1,1); glVertex3f(-1,+1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+   //  Top
+   glBegin(GL_QUADS);
+   glNormal3f( 0,+1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,+1,+1);
+   glTexCoord2f(1,0); glVertex3f(+1,+1,+1);
+   glTexCoord2f(1,1); glVertex3f(+1,+1,-1);
+   glTexCoord2f(0,1); glVertex3f(-1,+1,-1);
+   glEnd();
+
+
+   //  Bottom
+   glBegin(GL_QUADS);
+   glNormal3f( 0,-1, 0);
+   glTexCoord2f(0,0); glVertex3f(-1,-1,-1);
+   glTexCoord2f(1,0);  glVertex3f(+1,-1,-1);
+   glTexCoord2f(1,1); glVertex3f(+1,-1,+1);
+   glTexCoord2f(0,1); glVertex3f(-1,-1,+1);
+   glEnd();
+
+   //  Undo transofrmations
+   glPopMatrix();
+ }
+
+static void DrawComputer(double x, double y, double z, double s, double th, double ph){
   //  Save transformation
   glPushMatrix();
   //  Offset, scale and rotate
@@ -1214,13 +1296,20 @@ void DrawComputer(double x, double y, double z, double s, double th, double ph){
   glPopMatrix();
 }
 
+static void SetFloatingTape(double x, double y, double z){
+  glPushMatrix();
+
+  glTranslated(x,y,z);
+  glRotated(zh, 0, 1, 0);
+  DrawSecretTape(0, 0.5+0.1*Sin(zh), 0,    .4,0.23,0.07, 0);
+
+  glPopMatrix();
+}
 
 
 /*
- *  Draw a cube
- *     at (x,y,z)
- *     dimensions (dx,dy,dz)
- *     rotated th about the y axis
+ *  Draw a cube for the parthenon!
+ *
  */
 static void cubeParth(double x,double y,double z,
                  double dx,double dy,double dz,
@@ -1520,6 +1609,10 @@ void display()
    DrawWaterFloor();
 
 
+   //SetFloatingTape(0, 0, 0);
+   //TODO: EASTER EGG FLOATING TAPE
+
+
    //Instead of declaring these as individual objects, use an array to map track
    DrawGround();
 
@@ -1589,8 +1682,10 @@ void display()
    glDisable(GL_LIGHTING);
 
    //  Display parameters //TODO: REMOVE ME
-   if(hud)
+   if(hud){
       Print("Cans:%d/%d", cans_left,numcans);
+      Print("  Secret:%d/1", collectedTape);
+  }
 
    glWindowPos2i(20,20);
 
@@ -1826,7 +1921,7 @@ int main(int argc,char* argv[])
    glutSpecialFunc(special);
    glutKeyboardFunc(key);
    glutIdleFunc(idle);
-   glutIdleFunc(idle);
+   //glutIdleFunc(idle);
 
    //  Load textures
    texture[0] = LoadTexBMP("90s_2_sphere.bmp"); //flashy 90s texture
@@ -1841,6 +1936,11 @@ int main(int argc,char* argv[])
    texture[9] = LoadTexBMP("win95.bmp");
    texture[10] = LoadTexBMP("keyboard.bmp");
    texture[11] = LoadTexBMP("compfront.bmp");
+   texture[12] = LoadTexBMP("jazzy.bmp");
+   texture[13] = LoadTexBMP("ps1_top.bmp");
+   texture[14] = LoadTexBMP("secret_tape_front.bmp");
+   texture[15] = LoadTexBMP("secret_tape_back.bmp");
+
 
    water_texture[0] = LoadTexBMP("water2.bmp");
    water_texture[1] = LoadTexBMP("water3.bmp");
