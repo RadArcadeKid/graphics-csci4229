@@ -66,7 +66,7 @@ double ball_x, ball_z = 0.0;
 double ball_y = 0.2;
 
 //Texture arrays:
-unsigned int texture[16]; // misc textures
+unsigned int texture[17]; // misc textures
 unsigned int water_texture[7]; // water textures
 unsigned int skybox[5]; // skybox textures
 
@@ -1497,10 +1497,111 @@ void DrawParthenon(double x, double y, double z, double s, double th){
   glPopMatrix();
 }
 
+static void paint1(double x, double y, double z, double dx,double dy){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glScaled(dx, dy, 1);
+    glRotated(90, 1,0,0);
+    //  Enable textures
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+    glBindTexture(GL_TEXTURE_2D,texture[16]); //paint window
+    glBegin(GL_QUADS);
+    glNormal3f( 0,+1, 0);
+    glTexCoord2f(0,0); glVertex3f(-1,0,+1);
+    glTexCoord2f(1,0); glVertex3f(+1,0,+1);
+    glTexCoord2f(1,0.19); glVertex3f(+1,0,-1);
+    glTexCoord2f(0,0.19); glVertex3f(-1,0,-1);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
+static void paint2(double x, double y, double z, double dx,double dy){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glScaled(dx, dy, 1);
+    glRotated(90, 1,0,0);
+
+    //  Enable textures
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+    glBindTexture(GL_TEXTURE_2D,texture[16]); //paint window
+    glBegin(GL_QUADS);
+    glNormal3f( 0,+1, 0);
+    glTexCoord2f(0,0.21); glVertex3f(-1,0,+1);
+    glTexCoord2f(0.15,0.21); glVertex3f(+1,0,+1);
+    glTexCoord2f(0.15,0.895); glVertex3f(+1,0,-1);
+    glTexCoord2f(0,0.895); glVertex3f(-1,0,-1);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
+
+static void paint3(double x, double y, double z, double dx,double dy){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glScaled(dx, dy, 1);
+    glRotated(90, 1,0,0);
+
+    //  Enable textures
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+    glBindTexture(GL_TEXTURE_2D,texture[16]); //paint window
+    glBegin(GL_QUADS);
+    glNormal3f( 0,+1, 0);
+    glTexCoord2f(0.948,0.21); glVertex3f(-1,0,+1);
+    glTexCoord2f(1,0.21); glVertex3f(+1,0,+1);
+    glTexCoord2f(1,0.89); glVertex3f(+1,0,-1);
+    glTexCoord2f(0.948,0.89); glVertex3f(-1,0,-1);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
+static void paint4(double x, double y, double z, double dx,double dy){
+    glPushMatrix();
+    glTranslated(x,y,z);
+    glScaled(dx, dy, 1);
+    glRotated(90, 1,0,0);
+    glEnable(GL_TEXTURE_2D);
+    glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+    glBindTexture(GL_TEXTURE_2D,texture[16]); //paint window
+    glBegin(GL_QUADS);
+    glNormal3f( 0,+1, 0);
+    glTexCoord2f(0,0.895); glVertex3f(-1,0,+1);
+    glTexCoord2f(1,0.895); glVertex3f(+1,0,+1);
+    glTexCoord2f(1,1); glVertex3f(+1,0,-1);
+    glTexCoord2f(0,1); glVertex3f(-1,0,-1);
+    glEnd();
+    glDisable(GL_TEXTURE_2D);
+    glPopMatrix();
+}
+
+
+static void DrawPaintWindow(double x, double y, double z, double th, double ph){
+   glPushMatrix();
+   glTranslated(x, y-0.5, z);
+   glRotated(th,0,1,0);
+   glRotated(ph,1,0,0);
+
+   //draw paint windows!
+   paint1(0,0,0, 2, 0.4);
+   paint2(-1.75,1.6,0, 0.25, 1.2);
+   paint3(1.9,1.6,0, 0.1, 1.2);
+   paint4(0,3,0, 2, 0.2);
+
+
+
+   glPopMatrix();
+}
+
+
 /*
  * Get mode of control depending on which way the camera is facing
  */
-void SetControlMode(){
+static void SetControlMode(){
   if(th > 0){
     if(th <= 45 || th >= 315)
       ctrlmode = 0;
@@ -1675,7 +1776,7 @@ void display()
    drawError(3.6, 1.4, -10.3+0.6*Cos(zh), 0.9, 270, 0);
 
 
-
+   DrawPaintWindow(0, 0, 0, 0, 0);
 
 
    //  Draw hud - no lighting from here on
@@ -1940,6 +2041,7 @@ int main(int argc,char* argv[])
    texture[13] = LoadTexBMP("ps1_top.bmp");
    texture[14] = LoadTexBMP("secret_tape_front.bmp");
    texture[15] = LoadTexBMP("secret_tape_back.bmp");
+   texture[16] = LoadTexBMP("paint.bmp");
 
 
    water_texture[0] = LoadTexBMP("water2.bmp");
