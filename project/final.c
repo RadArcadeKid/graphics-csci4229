@@ -3,30 +3,6 @@
  * Jacob (Jake) Henson - 105963531
  * CSCI4229/5229 Fall 2020
  *
- * A program demonstrating my ability to light a scene with custom objects
- *  Key bindings
-*   a/A        Decrease/increase ambient light
-*   d/D        Decrease/increase diffuse light
-*   s/S        Decrease/increase specular light
-*   e/E        Decrease/increase emitted light
-*   n/N        Decrease/increase shininess
-*   F1         Toggle smooth/flat shading
-*   F2         Toggle local viewer mode
-*   F3         Toggle light distance (1/5)
-*   F8         Change ball increment
-*   F9         Invert bottom normal
-*   m          Toggles light movement
-*   p          Toggles ortogonal/perspective projection
-*   o          Cycles through objects
-*   ]/[        Change light azimuth
-*   h/H        Change light height
-*   8/5        Raise/lower light
-*   +/-        Change field of view of perspective
-*   x          Toggle hud
-*   arrows     Change view angle
-*   0          Reset view angle
-*   ESC        Exit
-
  */
 #include "CSCIx229.h"
 
@@ -71,27 +47,29 @@ unsigned int water_texture[7]; // water textures
 unsigned int skybox[5]; // skybox textures
 
 
-int speed = 13;
-double movement = 0.08;
+int speed = 25;
+//double movement = 0.08;
+double movement = 0.16;
+
 
 //sloppy way of defining number of cans in the level
 //so I don't have to update it everytime...probably not best practice
-#define numcans 8
+#define numcans 9
 
 //array to determine whether the user has collected a can or not
-int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0, 0};
+int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 //places to store x and z coordinates of cans
-double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12, 4.0};
-double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6, -8.0};
+double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12, 4.0, 8.0};
+double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6, -8.0, -8.0};
 
 
 
-#define numground 19
+#define numground 22
 
 //places to store the x and y coordinates of the ground
-double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,           -4.0, -4.0,-4.0,-4.0, -2.0 , 0.0, 2.0,  2.0, 4.0, 6.0};
-double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,          -4.0, -6.0,-8.0,-10.0,-10.0,-10.0, -10.0, -8.0,-8.0, -8.0};
+double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,           -4.0, -4.0,-4.0,-4.0, -2.0 , 0.0, 2.0,  2.0, 4.0, 6.0,  8.0, 8.0, 8.0};
+double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,          -4.0, -6.0,-8.0,-10.0,-10.0,-10.0, -10.0, -8.0,-8.0, -8.0,-8.0,-6.0, -4.0};
 
 
 typedef struct {float x,y,z;} vtx;
@@ -1580,15 +1558,18 @@ static void paint4(double x, double y, double z, double dx,double dy){
 }
 
 
-static void DrawPaintWindow(double x, double y, double z, double th, double ph){
+static void DrawPaintWindow(double x, double y, double z, double s, double th, double ph){
    glPushMatrix();
-   glTranslated(x, y-0.5, z);
-   glRotated(th,0,1,0);
+   glTranslated(x, y, z);
    glRotated(ph,1,0,0);
+   glRotated(th,0,1,0);
+   glScaled(s,s,s);
+
+
 
    //draw paint windows!
    paint1(0,0,0, 2, 0.4);
-   paint2(-1.75,1.6,0, 0.3, 1.2);
+   paint2(-1.73,1.6,0, 0.27, 1.2);
    paint3(1.9,1.6,0, 0.1, 1.2);
    paint4(0,3,0, 2, 0.2);
 
@@ -1710,10 +1691,6 @@ void display()
    DrawWaterFloor();
 
 
-   //SetFloatingTape(0, 0, 0);
-   //TODO: EASTER EGG FLOATING TAPE
-
-
    //Instead of declaring these as individual objects, use an array to map track
    DrawGround();
 
@@ -1776,7 +1753,10 @@ void display()
    drawError(3.6, 1.4, -10.3+0.6*Cos(zh), 0.9, 270, 0);
 
 
-   DrawPaintWindow(0, 0, 0, 0, 0);
+   //easter egg area
+   DrawPaintWindow(8, -0.5, -11, 0.7, 0, 0);
+   SetFloatingTape(8, 0, -12);
+   DrawPillar(6.15,-3,-9.1,   13, 0);
 
 
    //  Draw hud - no lighting from here on
@@ -1785,7 +1765,7 @@ void display()
    //  Display parameters //TODO: REMOVE ME
    if(hud){
       Print("Cans:%d/%d", cans_left,numcans);
-      Print("  Secret:%d/1", collectedTape);
+      Print("  Secret Tape:%d/1", collectedTape);
   }
 
    glWindowPos2i(20,20);
