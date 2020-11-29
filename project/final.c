@@ -1588,7 +1588,7 @@ static void DrawPaintWindow(double x, double y, double z, double th, double ph){
 
    //draw paint windows!
    paint1(0,0,0, 2, 0.4);
-   paint2(-1.75,1.6,0, 0.25, 1.2);
+   paint2(-1.75,1.6,0, 0.3, 1.2);
    paint3(1.9,1.6,0, 0.1, 1.2);
    paint4(0,3,0, 2, 0.2);
 
