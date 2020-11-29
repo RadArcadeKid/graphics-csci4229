@@ -172,7 +172,7 @@ static void LoadMaterial(const char* file)
    FILE* f = fopen(file,"r");
    if (!f)
    {
-      fprintf(stderr,"Cannot open material file %s\n",file);
+      //fprintf(stderr,"Cannot open material file %s\n",file);
       return;
    }
 
@@ -247,7 +247,7 @@ static void SetMaterial(const char* name)
          return;
       }
    //  No matches
-   fprintf(stderr,"Unknown material %s\n",name);
+   //fprintf(stderr,"Unknown material %s\n",name);
 }
 
 //

@@ -28,10 +28,13 @@ int diffuse   =  50;  // Diffuse intensity (%)
 int specular  =   0;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
 float shiny   =   1;  // Shininess (value)
-int zh        =  90;  // Light azimuth
+int zh        =  90;  // azimuth
 float zoom = 2.0;
 int old_t;
 float dt;
+
+int dolphin;
+int skull;
 
 int ball_ph = 0;
 int ball_th = 0;
@@ -1579,6 +1582,40 @@ static void DrawPaintWindow(double x, double y, double z, double s, double th, d
 }
 
 
+static void DrawDolphin(double x, double y, double z, double s, double r, double th, double ph){
+  //  Draw the model
+  glPushMatrix();
+
+  //RGBA
+  float RGBA[4] = {0.933, 0.8, 0.933, 1};  //  Colors
+  int spc = 32;
+  float Shinyness[] = {24};
+  float Specular[]  = {spc,spc,spc,1.0};
+
+
+
+  glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,Shinyness);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,RGBA);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,RGBA);
+  glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
+
+
+  glColor3f(0.933, 0.4, 0.933);
+
+
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glRotated(ph,1,0,0);
+
+
+
+
+  glScaled(s,s,s);
+  glTranslated(0, +r, 0);
+  glCallList(dolphin);
+  glPopMatrix();
+}
+
 /*
  * Get mode of control depending on which way the camera is facing
  */
@@ -1689,6 +1726,10 @@ void display()
 
    //Display water floor
    DrawWaterFloor();
+
+   DrawDolphin(0,-5, -2, 1, 2, -90, zh);
+   DrawDolphin(0,-5, -3, 0.7, 1.5, -90, zh+20);
+   DrawDolphin(0,-5, -4, 0.7, 2, -90, zh+95);
 
 
    //Instead of declaring these as individual objects, use an array to map track
@@ -2038,6 +2079,11 @@ int main(int argc,char* argv[])
    skybox[2] = LoadTexBMP("box_Left.bmp");
    skybox[3] = LoadTexBMP("box_Right.bmp");
    skybox[4] = LoadTexBMP("box_Top.bmp");
+
+   //load objs
+   dolphin = LoadOBJ("dolphin.obj");
+   skull = LoadOBJ("skull.obj");
+
 
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");

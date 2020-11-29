@@ -1,6 +1,6 @@
 # Blender v2.83 (sub 17) OBJ File: 'scull lp.blend'
 # www.blender.org
-mtllib scull.mtl
+mtllib skull2.mtl
 o Cube
 v 0.614033 0.000118 -0.000086
 v 0.558689 0.000000 -0.684628
@@ -702,7 +702,7 @@ vn -0.1535 -0.3049 0.9400
 vn -0.5702 0.5389 0.6201
 vn -0.3587 -0.9107 -0.2049
 vn 0.8856 -0.1980 -0.4203
-usemtl Material
+usemtl None
 s off
 f 25//1 19//1 6//1 12//1
 f 16//2 2//2 5//2 18//2
