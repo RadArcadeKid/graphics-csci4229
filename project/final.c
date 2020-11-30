@@ -1,3 +1,4 @@
+
   /*
  * FINAL PROJECT
  * Jacob (Jake) Henson - 105963531
@@ -50,29 +51,28 @@ unsigned int water_texture[7]; // water textures
 unsigned int skybox[5]; // skybox textures
 
 
-int speed = 25;
-//double movement = 0.08;
-double movement = 0.16;
+int speed = 16;
+double movement = 0.08;
 
 
 //sloppy way of defining number of cans in the level
 //so I don't have to update it everytime...probably not best practice
-#define numcans 9
+#define numcans 12
 
 //array to determine whether the user has collected a can or not
-int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+int collected_cans[numcans] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 //places to store x and z coordinates of cans
-double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12, 4.0, 8.0};
-double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6, -8.0, -8.0};
+double cans_x[numcans] = {0.0,  -2.0, -4.0, -4.0,  0.0,     -8,  -12, 4.0, 8.0, 8.0, 12.0, 6.0};
+double cans_z[numcans] = {-2.0, -2.0, -4.0, -10.0,  -10.0,  -5.6,-5.6, -8.0, -8.0, -4.0, -4.0, -2.0};
 
 
 
-#define numground 22
+#define numground 25
 
 //places to store the x and y coordinates of the ground
-double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,           -4.0, -4.0,-4.0,-4.0, -2.0 , 0.0, 2.0,  2.0, 4.0, 6.0,  8.0, 8.0, 8.0};
-double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,          -4.0, -6.0,-8.0,-10.0,-10.0,-10.0, -10.0, -8.0,-8.0, -8.0,-8.0,-6.0, -4.0};
+double ground_x[numground] = {0.0, 0.0,-2.0,-4.0,    -6.0,-8.0,-10.0,-12.0,     -4.0, -4.0,-4.0, -4.0,    -2.0 , 0.0,  2.0,   2.0,    4.0, 6.0,  8.0, 8.0,     8.0, 10.0, 12.0, 8.0, 6.0};
+double ground_z[numground] = {0.0,-2.0,-2.0,-2.0,    -5.6,-5.6,-5.6,-5.6,       -4.0, -6.0,-8.0,-10.0,   -10.0,-10.0, -10.0, -8.0,   -8.0, -8.0,-8.0,-6.0,    -4.0, -4.0, -4.0,-2.0,-2.0};
 
 
 typedef struct {float x,y,z;} vtx;
@@ -1592,29 +1592,35 @@ static void DrawDolphin(double x, double y, double z, double s, double r, double
   float Shinyness[] = {24};
   float Specular[]  = {spc,spc,spc,1.0};
 
-
-
   glMaterialfv(GL_FRONT_AND_BACK,GL_SHININESS,Shinyness);
   glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,RGBA);
   glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,RGBA);
   glMaterialfv(GL_FRONT_AND_BACK,GL_SPECULAR,Specular);
-
-
   glColor3f(0.933, 0.4, 0.933);
-
-
   glTranslated(x,y,z);
   glRotated(th,0,1,0);
   glRotated(ph,1,0,0);
-
-
-
 
   glScaled(s,s,s);
   glTranslated(0, +r, 0);
   glCallList(dolphin);
   glPopMatrix();
 }
+
+
+static void DrawSkull(double x, double y, double z, double s, double th, double ph){
+  //  Draw the model
+  glPushMatrix();
+  glColor3f(0.25, 0.8, 0.8);
+
+  glTranslated(x,y,z);
+  glRotated(th,0,1,0);
+  glRotated(ph,1,0,0);
+  glScaled(s,s,s);
+  glCallList(skull);
+  glPopMatrix();
+}
+
 
 /*
  * Get mode of control depending on which way the camera is facing
@@ -1721,19 +1727,24 @@ void display()
       glLightfv(GL_LIGHT0,GL_SPECULAR,Specular);
       glLightfv(GL_LIGHT0,GL_POSITION,Position);
 
+
+
    //Draw Skybox
    drawSkybox(20, ball_x, ball_z);
 
    //Display water floor
    DrawWaterFloor();
 
-   DrawDolphin(0,-5, -2, 1, 2, -90, zh);
-   DrawDolphin(0,-5, -3, 0.7, 1.5, -90, zh+20);
-   DrawDolphin(0,-5, -4, 0.7, 2, -90, zh+95);
+   //Draw Dolphins
+   DrawDolphin(2,-5, -2, 1, 2, -90, zh);
+   DrawDolphin(2,-5, -4, 0.7, 2, -90, zh+95);
+   double sklook = (6*ball_x)+50;
+   DrawSkull(-8, 1, -10,  1.5, sklook, 0);
 
 
 
-   DrawDolphin(4,-5, -8, 1, 3, 0, zh+180);
+   DrawDolphin(6,-5, -10, 1, 3, 0, zh+180);
+
 
 
 
@@ -1776,6 +1787,10 @@ void display()
    DrawPillar(-1,0,-8.7,   pilht, 1);
 
 
+   DrawPillar(4,0,-5.18,   pilht, 1);
+   DrawPillar(4,0,-7.18,   pilht, 1);
+
+
    drawError(-3+0.2*Sin(zh), 1, -11, 0.9, 0, 0);
    drawError(-3.1+0.3*Sin(zh), 1.1, -11.1, 0.9, 0, 0);
    drawError(-3.2+0.4*Sin(zh), 1.2, -11.2, 0.9, 0, 0);
@@ -1799,6 +1814,10 @@ void display()
    drawError(3.6, 1.4, -10.3+0.6*Cos(zh), 0.9, 270, 0);
 
 
+   DrawComputer(11.6,0.2,-8.0,   1.5,  270,0);
+
+
+
    //easter egg area
    DrawPaintWindow(8, -0.5, -11, 0.7, 0, 0);
    SetFloatingTape(8, 0, -12);
@@ -1811,7 +1830,7 @@ void display()
    //  Display parameters //TODO: REMOVE ME
    if(hud){
       Print("Cans:%d/%d", cans_left,numcans);
-      Print("  Secret Tape:%d/1", collectedTape);
+      Print("  Secret:%d/1", collectedTape);
   }
 
    glWindowPos2i(20,20);
