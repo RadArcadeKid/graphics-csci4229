@@ -1732,6 +1732,11 @@ void display()
    DrawDolphin(0,-5, -4, 0.7, 2, -90, zh+95);
 
 
+
+   DrawDolphin(4,-5, -8, 1, 3, 0, zh+180);
+
+
+
    //Instead of declaring these as individual objects, use an array to map track
    DrawGround();
 
