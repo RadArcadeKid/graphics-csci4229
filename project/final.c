@@ -42,6 +42,8 @@ int ball_th = 0;
 
 int forward, sideways = 0;
 
+int secret = 0; //for the secret easter egg
+
 double ball_x, ball_z = 0.0;
 double ball_y = 0.2;
 
@@ -193,7 +195,7 @@ static void Vertex(int th,int ph)
 /*
  * Ground - draws the track
  */
-static void Ground(double x, double y, double z, double s, double dy){
+static void Ground(double x, double y, double z, double s, double dy, int col){
   glPushMatrix();
   //  Offset, scale and rotate
   glTranslated(x,-dy,z);
@@ -212,7 +214,11 @@ static void Ground(double x, double y, double z, double s, double dy){
   //glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,mode?GL_REPLACE:GL_MODULATE);
   glBindTexture(GL_TEXTURE_2D,texture[1]); //carpet
   glBegin(GL_QUADS);
-  glColor3f(0.933, 0.510, 0.933);
+  if(col)
+    glColor3f(0.933, 0.510, 0.933);
+  else
+    glColor3f(0.498, 1.000, 0.831); //for secret ground
+
 
  //OLD GROUND
 //////////////////////////////////////////////////
@@ -308,7 +314,12 @@ static void Water(int x, int y, int z, int ct, int flip){
  */
 static void DrawGround(){
   for(int i = 0; i < numground; i++){
-    Ground(ground_x[i], 0, ground_z[i], 1, 0.05);
+    Ground(ground_x[i], 0, ground_z[i], 1, 0.05, 1);
+  }
+
+  if(secret){
+    Ground(8, 0, -10, 1, 0.05, 0); //secret ground
+    Ground(8, 0, -12, 1, 0.05, 0); //secret ground
   }
 }
 
@@ -350,6 +361,22 @@ static void CheckGround(double ball_x, double ball_z){
       }
     }
   }
+
+  //if the Easter Egg is active
+  //check if it's on the secret tiles
+  if(secret){
+    if(ball_x > 8-range && ball_x < 8+range){
+      if(ball_z >  -12-range && ball_z < -10+range){
+        outOfRange = 0;
+      }
+    }
+    if(ball_z >  -12-range && ball_z < -10+range){
+      if(ball_x > 8-range && ball_x < 8+range){
+        outOfRange = 0;
+      }
+    }
+  }
+
 
   //if the ball has fallen off the track
   if(outOfRange == 1){
@@ -808,6 +835,94 @@ static void DrawTeaCan(double x,double y,double z, double delta_h, double s){
 }
 
 
+/*
+ *  DrawJazzyCup - draws an jazzy 90s cup
+ */
+static void JazzyCup(double x,double y,double z, double delta_h, double s, double th){
+  const double d=2*PI/12;
+  float r = 0.45;
+  double h = delta_h;
+
+
+  //  Save transformation
+  glPushMatrix();
+  //  Offset, scale and rotate
+  glTranslated(x,y-0.1,z);
+  glRotated(th, 0,1,0);
+  float sm = 1;
+  glScaled(sm*s, sm*s, sm*s);
+
+  glColor3f(0.2, 0.749, 0.740);
+
+  glEnable(GL_TEXTURE_2D);
+  glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
+  glBindTexture(GL_TEXTURE_2D,texture[12]); //jazzy_pattern
+
+  glColor3f(1, 1, 1);
+
+  //draw sides of cylinder
+  glBegin(GL_QUAD_STRIP);
+  //glNormal3d(0.0, h, 0.0);
+    for(float i = 0; i <= 2.1*PI; i+=d){
+      glNormal3d(r * cos(i), 0, r * sin(i));
+      const float tc = ( i / (float)( 2 * PI ));
+      glTexCoord2f(-tc*2, 0);
+
+      glVertex3f(0.7*r * cos(i), -h, 0.7*r * sin(i));
+      glTexCoord2f(-tc*2, h*s);
+
+      glVertex3f(r * cos(i), 0+0.1, r * sin(i));
+    }
+  glEnd();
+
+  glNormal3d(0,+1,0); //reset normals
+
+  glColor3f(1, 1, 1);
+
+  glBindTexture(GL_TEXTURE_2D,texture[13]); //drink
+
+  glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, 0, 0);
+        for (double i = 2 * PI; i >= 0; i -= d)
+
+        {
+            glTexCoord2f( 0.5f * cos(i) + 0.5f, 0.5f * sin(i) + 0.5f );
+            glVertex3f(0.95*r * cos(i), 0, 0.95*r * sin(i));
+        }
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(r, 0, 0);
+    glEnd();
+
+
+
+  glBindTexture(GL_TEXTURE_2D,texture[12]); //jazzy pattern for bottom of cup
+
+
+    glNormal3d(0,-1,0); //reset normals
+    glColor3f(1, 1, 1);
+
+    glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2f( 0.5, 0.5 );
+        glVertex3f(0, -h, 0);
+        for (double i = 0; i <= 2 * PI; i += d)
+        {
+            glTexCoord2f(cos(i) + 0.5f, sin(i) + 0.5f );
+            glVertex3f(0.7*r * cos(i), 0, 0.7*r * sin(i));
+        }
+    glEnd();
+
+    glNormal3d(0,-1,0); //reset normals
+
+  glDisable(GL_TEXTURE_2D);
+
+
+  //  Undo transformations
+  glPopMatrix();
+}
+
+
+
 
 /*
  *  DrawPillarTube - draws the pillar tube for the pillar
@@ -848,7 +963,7 @@ static void DrawPillarTube(double x,double y,double z, double h, double s){
 void DrawWaterFloor(){
   glPushMatrix();
   glScaled(2,2,2);
-  int gridsize = 15;
+  int gridsize = 17;
   glTranslated(-gridsize, -2.5, -gridsize);
 
   int ct = zh / 30;
@@ -905,6 +1020,13 @@ void CheckPickup(){
       }
     }
   }
+
+  //check for tape
+  if(ball_x >= 8-range && ball_x <= 8+range){
+    if(ball_z >= -12-range && ball_z <= -12+range){
+       collectedTape = 1;
+    }
+  }
 }
 
 int getNumCansLeft(){
@@ -914,6 +1036,10 @@ int getNumCansLeft(){
       collected+=1;
     }
   }
+
+  if(collected == numcans)
+    secret = 1;
+
   return collected;
 }
 
@@ -922,12 +1048,8 @@ int getNumCansLeft(){
  *
  */
 void DrawPillar(double x, double y, double z, double h, int includeplant){
-    //add concrete texture
 
     glPushMatrix();
-
-
-
     glColor3f(1.0, 1.0, 1.0);
     float scale = 0.3;
     glTranslated(x, y+0.02, z);
@@ -1739,7 +1861,7 @@ void display()
    DrawDolphin(2,-5, -2, 1, 2, -90, zh);
    DrawDolphin(2,-5, -4, 0.7, 2, -90, zh+95);
    double sklook = (6*ball_x)+50;
-   DrawSkull(-8, 1, -10,  1.5, sklook, 0);
+   DrawSkull(-9, 2, -10,  1.7, sklook, 0);
 
 
 
@@ -1753,11 +1875,12 @@ void display()
 
 
    DrawMarble(ball_x,ball_y,ball_z,     0.2, ball_th, ball_ph);
+   //UNCOMMENT ME
    CheckGround(ball_x, ball_z);//determine if the ball can drop
 
    DrawCollectables(); //draw the cans in the map
 
-   DrawComputer(-1,0,-5.6,   1.2,  0,0);
+   DrawComputer(-1,0.2,-5.6,   1.4,  0,0);
 
    DrawParthenon(-15,0,-5.7, 2, 90);
    drawError(-13.6, 1.3, -5.7,   1, 90, 1);
@@ -1817,11 +1940,26 @@ void display()
    DrawComputer(11.6,0.2,-8.0,   1.5,  270,0);
 
 
+   DrawPillar(3.62,0,-2.49,   pilht, 1);
+   DrawPillar(3.62,0,-0.49,   pilht, 1);
+   DrawPillar(7.1,0,-0.49,   pilht, 1);
+   drawError(13.5+(Sin(zh)*0.3), 1.5, -3.9,   1, 270, 1);
+
+
+   JazzyCup(10, 1, -5.5, 1, 1, -th);
+   JazzyCup(10, 1, -2.5, 1, 1, th);
+
+   JazzyCup(13, 1, -5.5, 1, 1, th);
+   JazzyCup(13, 1, -2.5, 1, 1, -th);
+
 
    //easter egg area
    DrawPaintWindow(8, -0.5, -11, 0.7, 0, 0);
-   SetFloatingTape(8, 0, -12);
-   DrawPillar(6.15,-3,-9.1,   13, 0);
+
+   if(!collectedTape)
+      SetFloatingTape(8, 0, -12);
+
+   DrawPillar(6.15,-3,-9.2,   12.5, 0); //pillar to hold secret tape
 
 
    //  Draw hud - no lighting from here on
@@ -2083,7 +2221,7 @@ int main(int argc,char* argv[])
    texture[10] = LoadTexBMP("keyboard.bmp");
    texture[11] = LoadTexBMP("compfront.bmp");
    texture[12] = LoadTexBMP("jazzy.bmp");
-   texture[13] = LoadTexBMP("ps1_top.bmp");
+   texture[13] = LoadTexBMP("drink.bmp");
    texture[14] = LoadTexBMP("secret_tape_front.bmp");
    texture[15] = LoadTexBMP("secret_tape_back.bmp");
    texture[16] = LoadTexBMP("paint.bmp");
@@ -2105,7 +2243,14 @@ int main(int argc,char* argv[])
    skybox[4] = LoadTexBMP("box_Top.bmp");
 
    //load objs
+
+
+   //LOW POLY DOLPHIN by rkuhl from: https://www.cgtrader.com/free-3d-models/animals/mammal/dolphin-9b7a7368-38e7-4ec1-ba0a-173d603ecc13
+   //modified in Blender
    dolphin = LoadOBJ("dolphin.obj");
+
+   //LOW POLY SKULL by Vladmir E., from: https://sketchfab.com/3d-models/low-poly-skull-7dc37b0f8edf4e89843b28db268fc973#download
+   //modified in Blender, corrected normals
    skull = LoadOBJ("skull.obj");
 
 
