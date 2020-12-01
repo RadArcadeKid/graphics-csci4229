@@ -1,25 +1,30 @@
-FINAL PROJECT v0.7
-
+FINAL PROJECT v1.0
 Jacob (Jake) Henson
 CSCI4229/5229 Fall 2020
-11/24/2020
+11/30/2020
 
 This is a simple marble game where you collect tea cans and explore the level!
-Can you find the secret easter egg?
+Roll the marble around, check out the objects, and enjoy!
 
 **WHAT TO LOOK FOR**
-- Notice how the marble moves when you use WASD, depending on the camera
-- HUD (text) display on the bottom left that shows how many collectibles to get.
+- Notice how the marble moves when you use WASD, depending on the camera angle
+- HUD (text) display on the bottom left that shows how many collectibles to get
+- Check the well-lit objects with correct normals!
 - Watch what happens when you roll the marble off the track!
 
+- Graphically, check out all of the original openGL
+  objects I created and animated including:
+   - Arizona tea can
+   - Columns, Plants
+   - Computer, keyboard
+   - Parthenon
+   - Cups
+   - Secret Easter Egg Tape*
 
-- Graphically, check out all of the original openGL objects I created and animated including
-  - Arizona tea can
-  - Columns, Plants
-  - Computer, keyboard
-  - Parthenon
+- I also imported 2 objects from Blender, including a Skull obj and Dolphin Obj
 
 Remember you can navigate the marble around the scene to see more!
+*you can collect this item as a secret once you get all the cans!
 
 **TO RUN:**
 > make

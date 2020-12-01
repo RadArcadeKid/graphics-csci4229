@@ -4,7 +4,26 @@
  * Jacob (Jake) Henson - 105963531
  * CSCI4229/5229 Fall 2020
  *
+ **TO RUN:**
+ * > make
+ * > ./final
+ *
+ * **KEY BINDINGS:**
+ *  w/a/s/d      move marble forward/left/backward/right (depending on camera position)
+ *  v/V          Reset marble position
+ *  r/R          Reset game entirely (marble + cans)
+ *
+ *   arrow keys   change camera angle
+ *   +/-          zoom camera closer/farther
+ *   x/X          toggle HUD (number of collectibles indicator)
+ *   0            Reset zoom and view angle
+ *   ESC          Exit
+ *
  */
+
+
+
+
 #include "CSCIx229.h"
 
 #define PI (3.1415927)
@@ -22,9 +41,9 @@ int one       =   1;  // Unit value
 int distance  =   5;  // Light distance
 int inc       =  10;  // Ball increment
 int smooth    =   1;  // Smooth/Flat shading
-int local     =   0;  // Local Viewer Model
+int local     =   1;  // Local Viewer Model
 int emission  =   0;  // Emission intensity (%)
-int ambient   =  20;  // Ambient intensity (%)
+int ambient   =  30;  // Ambient intensity (%)
 int diffuse   =  50;  // Diffuse intensity (%)
 int specular  =   0;  // Specular intensity (%)
 int shininess =   0;  // Shininess (power of two)
@@ -53,7 +72,7 @@ unsigned int water_texture[7]; // water textures
 unsigned int skybox[5]; // skybox textures
 
 
-int speed = 16;
+int speed = 12;
 double movement = 0.08;
 
 
@@ -186,7 +205,7 @@ static void Vertex(int th,int ph)
    double y = Sin(th)*Cos(ph);
    double z =         Sin(ph);
    glNormal3d(x,y,z);
-   glTexCoord2d(th/360.0,ph/180.0+0.5); //TODO: FIX TEXTURE
+   glTexCoord2d(th/360.0,ph/180.0+0.5);
 
    glVertex3d(x,y,z);
 }
@@ -296,7 +315,7 @@ static void Water(int x, int y, int z, int ct, int flip){
   //  Enable textures
   glEnable(GL_TEXTURE_2D);
   glTexEnvi(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_REPLACE);
-  glBindTexture(GL_TEXTURE_2D, water_texture[ct]); //TODO: animated water
+  glBindTexture(GL_TEXTURE_2D, water_texture[ct]);
   glBegin(GL_QUADS);
   glColor3f(0.125, 0.698, 0.667);
   glNormal3f( 0,+1, 0);
@@ -631,42 +650,6 @@ static void cube2(double x,double y,double z,
    glPopMatrix();
 }
 
-
-//TODO: remove ball?
-/*
- *  Draw a ball
- *     at (x,y,z)
- *     radius (r)
- */
-static void ball(double x,double y,double z,double r)
-{
-   int th,ph;
-   float yellow[] = {1.0,1.0,0.0,1.0};
-   float Emission[]  = {0.0,0.0,0.01*emission,1.0};
-   //  Save transformation
-   glPushMatrix();
-   //  Offset, scale and rotate
-   glTranslated(x,y,z);
-   glScaled(r,r,r);
-   //  White ball
-   glColor3f(1,1,1);
-   glMaterialf(GL_FRONT,GL_SHININESS,shiny);
-   glMaterialfv(GL_FRONT,GL_SPECULAR,yellow);
-   glMaterialfv(GL_FRONT,GL_EMISSION,Emission);
-   //  Bands of latitude
-   for (ph=-90;ph<90;ph+=inc)
-   {
-      glBegin(GL_QUAD_STRIP);
-      for (th=0;th<=360;th+=2*inc)
-      {
-         Vertex(th,ph);
-         Vertex(th,ph+inc);
-      }
-      glEnd();
-   }
-   //  Undo transofrmations
-   glPopMatrix();
-}
 
 /*
  *  DrawLeaf draws a tiiiny leaf
@@ -1293,6 +1276,9 @@ void drawError(double x, double y, double z, double s, double th, int type){
 
 /*
  *  Draw The Secret Tape
+ * Why a secret tape? This is a reference to the old Tony Hawk's Pro Skater games
+ * Where you'd have to collect the secret skater tape just out of bounds
+ * Not sure why I included it as an easter egg, but hey, here we are lol
  */
 void DrawSecretTape(double x, double y, double z, double dx,double dy,double dz, double th){
    //  Save transformation
@@ -1743,7 +1729,6 @@ static void DrawSkull(double x, double y, double z, double s, double th, double 
   glPopMatrix();
 }
 
-
 /*
  * Get mode of control depending on which way the camera is facing
  */
@@ -1819,18 +1804,18 @@ void display()
    gluLookAt(Ex+ball_x,Ey, Ez+ball_z, ball_x,0,ball_z , 0,Cos(ph),0);
 
    //  Flat or smooth shading
-   glShadeModel(smooth ? GL_SMOOTH : GL_FLAT);
+   glShadeModel(GL_SMOOTH);
 
       //  Translate intensity to color vectors
-      float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0}; //todo: change these into normal value
+      float Ambient[]   = {0.01*ambient ,0.01*ambient ,0.01*ambient ,1.0};
       float Diffuse[]   = {0.01*diffuse ,0.01*diffuse ,0.01*diffuse ,1.0};
       float Specular[]  = {0.01*specular,0.01*specular,0.01*specular,1.0};
       //  Light position
-      float Position[]  = {distance*Cos(zh),1,distance*Sin(zh),1.0};
+      //float Position[]  = {distance*Cos(zh),1,distance*Sin(zh),1.0};
+      float Position[]  = {4,1,-1,  1.0};
+
       //  Draw light position as ball (still no lighting here)
       glColor3f(1,1,1);
-      //ball(1, 1, 1, 0.1);
-      ball(Position[0],Position[1],Position[2] , 0.1);
 
       //  OpenGL should normalize normal vectors
       glEnable(GL_NORMALIZE);
@@ -1860,13 +1845,12 @@ void display()
    //Draw Dolphins
    DrawDolphin(2,-5, -2, 1, 2, -90, zh);
    DrawDolphin(2,-5, -4, 0.7, 2, -90, zh+95);
-   double sklook = (6*ball_x)+50;
-   DrawSkull(-9, 2, -10,  1.7, sklook, 0);
-
-
-
    DrawDolphin(6,-5, -10, 1, 3, 0, zh+180);
 
+
+   //Draw Skull
+   double sklook = (6*ball_x)+50;
+   DrawSkull(-9, 2, -10,  1.7, sklook, 0);
 
 
 
@@ -1965,7 +1949,7 @@ void display()
    //  Draw hud - no lighting from here on
    glDisable(GL_LIGHTING);
 
-   //  Display parameters //TODO: REMOVE ME
+   //  Display HUD for text
    if(hud){
       Print("Cans:%d/%d", cans_left,numcans);
       Print("  Secret:%d/1", collectedTape);
@@ -2015,21 +1999,7 @@ void special(int key,int x,int y)
    //  Down arrow key - decrease elevation by 5 degrees
    else if (key == GLUT_KEY_DOWN)
       ph -= 5;
-   //  Smooth color model
-   else if (key == GLUT_KEY_F1)
-      smooth = 1-smooth;
-   //  Local Viewer
-   else if (key == GLUT_KEY_F2)
-      local = 1-local;
-   else if (key == GLUT_KEY_F3)
-      distance = (distance==1) ? 5 : 1;
-   //  Toggle ball increment
-   else if (key == GLUT_KEY_F8)
-      inc = (inc==10)?3:10;
-   //  Flip sign
-   else if (key == GLUT_KEY_F9)
-      one = -one;
-   //  Keep angles to +/-360 degrees
+
    th %= 360;
    ph %= 360;
    //  Update projection
@@ -2252,7 +2222,6 @@ int main(int argc,char* argv[])
    //LOW POLY SKULL by Vladmir E., from: https://sketchfab.com/3d-models/low-poly-skull-7dc37b0f8edf4e89843b28db268fc973#download
    //modified in Blender, corrected normals
    skull = LoadOBJ("skull.obj");
-
 
    //  Pass control to GLUT so it can interact with the user
    ErrCheck("init");
