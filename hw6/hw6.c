@@ -1,7 +1,6 @@
   /*
  * hw6: textures
- * *****Time taken: roughly 9 hours*********
- * Jacob (Jake) Henson - 105963531
+ * Jackie Henson
  * CSCI4229/5229 Fall 2020
  *
  * A program demonstrating my ability to light a scene with custom objects
@@ -778,7 +777,7 @@ int main(int argc,char* argv[])
    //  Request double buffered, true color window with Z buffering at 600x600
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    glutInitWindowSize(600,600);
-   glutCreateWindow("HW6: Textures, Jake Henson");
+   glutCreateWindow("HW6: Textures, Jackie Henson");
    //  Set callbacks
    glutDisplayFunc(display);
    glutReshapeFunc(reshape);
