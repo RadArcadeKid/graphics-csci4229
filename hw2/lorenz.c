@@ -1,7 +1,7 @@
 /*
  * Lorenz Attractor Program
  * For fun and for science! (Mostly fun)
- * Modified Lorenz.c to work using OpenGL by Jake Henson - 105963531
+ * Modified Lorenz.c to work using OpenGL by Jackie Henson - 105963531
  * University of Colorado Boulder, Fall 2020
  *
  * ~~ Key bindings ~~
@@ -256,7 +256,7 @@ int main(int argc,char* argv[])
    //  Request 500 x 500 pixel window
    glutInitWindowSize(500,500);
    //  Create the window
-   glutCreateWindow("Jake Henson - HW2");
+   glutCreateWindow("Jackie Henson - HW2");
    //  Tell GLUT to call "display" when the scene should be drawn
    glutDisplayFunc(display);
   //  Tell GLUT to call "reshape" when the window is resized
