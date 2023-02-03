@@ -1,4 +1,4 @@
-# Lorenz Attractor - HW 2 - Jake Henson
+# Lorenz Attractor - HW 2 - Jackie Henson
 EXE=lorenz
 
 # Main target
