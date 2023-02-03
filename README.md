@@ -1,2 +1,5 @@
-# graphics-csci4229
-Serves as a backup for my CSCI 4229 Computer Graphics Homework 
+## OpenGL Projects - (aka, graphics-csci4229)
+This work was part of a graduate-level Computer Graphics/OpenGL course I took at CU Boulder. C++ OpenGL is a VERY old graphics language, so everything made with it has that early 1990's CG look. All of these projects are quick little OpenGL programs that display images. For this, I used C++, a TON of crazy intense vector math and geometry, some creativity, as well as a deep understanding of the ins and outs of rendering engine and 3D graphics from my own projects outside of this. Note that NONE of this is rendered or made using external libraries or tools apart from those found in OpenGL and most linux systems. OpenGL may be an older language, but through this repo I intend to showcase my understanding of computer graphics. 
+
+All of these projects are written in OpenGL on an Ubuntu linux system. In order to run these, you may need a linux-based OS or emulator. If you are a current student looking to siphon my work and pass it off as your own - *stop it*.  
+
