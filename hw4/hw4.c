@@ -1,8 +1,7 @@
 /*
- * hw4: Projections
  *
- * Jacob (Jake) Henson - 105963531
- * CSCI4229/5229 Fall 2020
+ * Jackie Henson
+ * CSCI4229/5229 
  *
  * A program demonstrating my ability to create, rotate, scale, and draw 3D objects.
  * Also a cute lil scene with some flamingos!
