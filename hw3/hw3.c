@@ -1,7 +1,7 @@
 /*
  * hw3: Scene in 3D
  *
- * Jacob (Jake) Henson - 105963531
+ * Jackie Henson
  * CSCI4229/5229 Fall 2020
  *
  * A program demonstrating my ability to create, rotate, scale, and draw 3D objects.
@@ -461,7 +461,7 @@ int main(int argc,char* argv[])
    glutInitWindowSize(600,600);
    glutInitDisplayMode(GLUT_RGB | GLUT_DEPTH | GLUT_DOUBLE);
    //  Create the window
-   glutCreateWindow("HW3: Jake Henson");
+   glutCreateWindow("HW3: Jackie Henson");
    //  Tell GLUT to call "display" when the scene should be drawn
    glutDisplayFunc(display);
    //  Tell GLUT to call "reshape" when the window is resized
